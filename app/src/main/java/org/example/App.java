@@ -3,12 +3,7 @@
  */
 package org.example;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import objectsFromJson.ConfigPath;
-import objectsFromJson.ConfigsPath;
-
-import java.io.InputStream;
+import Factory.MainFactory;
 
 public class App {
     //private static Object MainFactory;

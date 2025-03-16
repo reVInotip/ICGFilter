@@ -1,17 +1,22 @@
 package objectsFromJson.parsedConfigurationObjects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ModelConfig {
-    private String ModelPath;
+    @JsonProperty("modelPath")
+    private String modelPath;
+    @JsonProperty("dialogFormExist")
     private boolean dialogFormExist;
+    @JsonProperty("dialogFormConfig")
     private DialogFormConfig dialogFormConfig;
 
     // Геттеры и сеттеры
     public String getModelPath() {
-        return ModelPath;
+        return modelPath;
     }
 
     public void setModelPath(String modelPath) {
-        this.ModelPath = modelPath;
+        this.modelPath = modelPath;
     }
 
     public boolean isDialogFormExist() {
@@ -33,7 +38,7 @@ public class ModelConfig {
     @Override
     public String toString() {
         return "ModelConfig{" +
-                "ModelPath='" + ModelPath + '\'' +
+                "ModelPath='" + modelPath + '\'' +
                 ", dialogFormExist=" + dialogFormExist +
                 ", dialogFormConfig=" + dialogFormConfig +
                 '}';

@@ -8,10 +8,10 @@ public class ICGFilter {
 
     ICGFilter(){
         createToolsButtons();
+
     }
 
 
-    //вот это сильно хочу, буду драться если уберём идею с привязкой кнопок
     private void createToolsButtons() {
 //        mainFrame.addToolsButtons(toolManager.getAvailableTools().toArray(new String[0]),
 //                toolManager.getToolsDescription(), toolManager.getToolsIcons());

@@ -1,7 +1,7 @@
 {
-	"ModelPath": "path",
+	"modelPath": "path",
 	"dialogFormExist": true,
-	"DialogFormConfig": {
+	"dialogFormConfig": {
 		"name": "firstDialogWindow",
 		"elements": [{
 			"name": "firstElement",

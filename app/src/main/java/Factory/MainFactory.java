@@ -1,4 +1,4 @@
-package org.example;
+package Factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.tools.javac.Main;
@@ -12,10 +12,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 
-class MainFactory {
+public class MainFactory {
     static private final String RESOURCE_FILE_NAME  = "/filtersPathToConfig.json";
     static HashMap<String, IFiltersModel> models = new HashMap<String, IFiltersModel>();
-    static void initFactory(){
+    public static void initFactory(){
 
         ConfigsPath filtersConfigPath = null;
         ObjectMapper mapper = new ObjectMapper();
@@ -37,9 +37,8 @@ class MainFactory {
         //тут происходит получение HashMap со всеми конфигами преобразованными в объект
         HashMap<String, ModelConfig> allInfAtConfig = new HashMap<String, ModelConfig>();
         for (ConfigPath configPath : filtersConfigPath.getToolPath()) {
-            //tool.getName();
             try {
-                InputStream inputStream = Main.class.getResourceAsStream(configPath.getPath());
+                InputStream inputStream = App.class.getResourceAsStream(configPath.getPath());
 
                 if (inputStream == null) {
                     throw new RuntimeException("Файл не найден: " + configPath.getPath());
