@@ -3,12 +3,22 @@
  */
 package org.example;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import objectsFromJson.ConfigPath;
+import objectsFromJson.ConfigsPath;
+
+import java.io.InputStream;
+
 public class App {
-    public String getGreeting() {
+    //private static Object MainFactory;
+
+    public static String getGreeting() {
         return "Hello World!";
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        //String a  = getGreeting();
+        MainFactory.initFactory();
     }
 }

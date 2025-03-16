@@ -1,0 +1,7 @@
+{
+	"ConfigPath":[
+	{"name": "first", "path": "/configs/conf1.json"},
+	{"name": "second", "path": "/configs/conf2.json"},
+	{"name": "three", "path": "/configs/conf3.json"}
+	]
+}
