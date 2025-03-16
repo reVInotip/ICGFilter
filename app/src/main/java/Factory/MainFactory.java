@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 public class MainFactory {
     static private final String RESOURCE_FILE_NAME  = "/filtersPathToConfig.json";
-    static HashMap<String, IFiltersModel> models = new HashMap<String, IFiltersModel>();
+
     public static void initFactory(){
 
         ConfigsPath filtersConfigPath = null;
