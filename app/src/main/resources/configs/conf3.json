@@ -1,0 +1,13 @@
+{
+	"modelPath": "path",
+	"dialogFormExist": true,
+	"dialogFormConfig": {
+		"name": "firstDialogWindow",
+		"elements": [{
+			"name": "firstElement",
+			"type": "matrix",
+			"max": 5,
+			"min": 3
+		}]
+	}
+}

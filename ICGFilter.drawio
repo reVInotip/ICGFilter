@@ -22,7 +22,7 @@
         <mxCell id="LQqoDkcMOgwp-KPweVIU-7" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;ICGFilter&lt;/b&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="345" y="-30" width="140" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="LQqoDkcMOgwp-KPweVIU-10" value="tools" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="LQqoDkcMOgwp-KPweVIU-10" value="filters" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="340" y="-240" width="430" height="150" as="geometry" />
         </mxCell>
         <mxCell id="LQqoDkcMOgwp-KPweVIU-12" value="«interface»&lt;br&gt;&lt;div&gt;Tool&lt;/div&gt;" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
