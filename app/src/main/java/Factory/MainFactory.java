@@ -1,8 +1,7 @@
 package Factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.tools.javac.Main;
-import model.filters.IFiltersModel;
+import model.filters.ModelFactory;
 import objectsFromJson.ConfigsPath;
 import objectsFromJson.ConfigPath;
 import objectsFromJson.parsedConfigurationObjects.ModelConfig;
@@ -10,19 +9,20 @@ import org.example.App;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainFactory {
     static private final String RESOURCE_FILE_NAME  = "/filtersPathToConfig.json";
+    //тут происходит получение HashMap со всеми конфигами преобразованными в объект
+    static private final HashMap<String, ModelConfig> allInfAtConfig = new HashMap<>();
 
     public static void initFactory(){
-
         ConfigsPath filtersConfigPath = null;
         ObjectMapper mapper = new ObjectMapper();
 
         //для получения путей до config этих фильтров
         try {
-
             InputStream inputStream = App.class.getResourceAsStream(RESOURCE_FILE_NAME);
             if (inputStream == null) {
                 throw new RuntimeException("Файл не найден: " + RESOURCE_FILE_NAME);
@@ -34,8 +34,6 @@ public class MainFactory {
             e.printStackTrace();
         }
 
-        //тут происходит получение HashMap со всеми конфигами преобразованными в объект
-        HashMap<String, ModelConfig> allInfAtConfig = new HashMap<String, ModelConfig>();
         for (ConfigPath configPath : filtersConfigPath.getToolPath()) {
             try {
                 InputStream inputStream = App.class.getResourceAsStream(configPath.getPath());
@@ -48,14 +46,22 @@ public class MainFactory {
                 ModelConfig modelConfig = mapper.readValue(inputStream, ModelConfig.class);
 
                 allInfAtConfig.put(configPath.getName(), modelConfig);
+                System.out.println(modelConfig);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
 
-        //ModelFactory.initFactory(allInfAtConfig);
+        ModelFactory.initFactory(allInfAtConfig);
 
         //DialogFactory.initFactory(allInfAtConfig);
+    }
+
+    public static void createModels() {
+        ModelFactory.createFilters();
+        for (Map.Entry<String, ModelConfig> modelInfo: allInfAtConfig.entrySet()) {
+            ModelFactory.createFilterModel(modelInfo.getKey(), modelInfo.getValue());
+        }
     }
 }
