@@ -1,5 +1,6 @@
 package controller;
 
+import controller.component.ComponentUpdate;
 import controller.filtersWorker.FilterManager;
 import model.MainModel;
 
@@ -24,6 +25,8 @@ public class ICGFilter {
     }
 
     public void start() {
-        model.start();
+        ComponentUpdate componentUpdate = new ComponentUpdate(model);
+
+        model.start(componentUpdate);
     }
 }

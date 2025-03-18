@@ -5,7 +5,7 @@ import model.filters.IFiltersModel;
 
 import java.awt.image.BufferedImage;
 
-@Filter(name = "inversion")
+@Filter(descr = "Инверсия", icon = "")
 public class Inversion extends IFiltersModel {
     @Override
     public void convert(BufferedImage image) {
