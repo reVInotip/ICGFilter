@@ -1,7 +1,7 @@
-package model.filters;
+package model.filters.filters;
 
-import model.Filter;
-import model.IFiltersModel;
+import model.filters.Filter;
+import model.filters.IFiltersModel;
 
 import java.awt.image.BufferedImage;
 

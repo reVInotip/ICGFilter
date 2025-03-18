@@ -1,4 +1,4 @@
-package model.filterModels.customTypes;
+package model.filters.filterModels.customTypes;
 
 public class Matrix {
     private final int width;

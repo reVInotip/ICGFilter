@@ -1,6 +1,6 @@
-package model.filterModels;
+package model.filters.filterModels;
 
-import model.filterModels.customTypes.Matrix;
+import model.filters.filterModels.customTypes.Matrix;
 
 import java.util.HashMap;
 

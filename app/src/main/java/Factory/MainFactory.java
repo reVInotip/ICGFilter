@@ -1,7 +1,7 @@
 package Factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import model.ModelFactory;
+import model.filters.ModelFactory;
 import objectsFromJson.ConfigsPath;
 import objectsFromJson.ConfigPath;
 import objectsFromJson.parsedConfigurationObjects.ModelConfig;

@@ -1,4 +1,4 @@
-package model.filterModels;
+package model.filters.filterModels;
 
 public class Parameter {
     public String type;

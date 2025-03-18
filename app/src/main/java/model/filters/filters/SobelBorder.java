@@ -1,18 +1,20 @@
-package model.filters;
+package model.filters.filters;
 
 import java.awt.image.BufferedImage;
 
-public class RobertsBorder {
+public class SobelBorder {
     static final private int binParam = 50;
 
-    static final private int[] robertsX = {
-            1, 0,
-            0, -1
+    static final private int[] sobelX = {
+            -1, 0, 1,
+            -2, 0, 2,
+            -1, 0, 1
     };
 
-    static final private int[] robertsY = {
-            0, 1,
-            -1, 0
+    static final private int[] sobelY = {
+            -1, -2, -1,
+            0, 0, 0,
+            1, 2, 1
     };
 
     static public void apply(BufferedImage image) {
@@ -23,9 +25,9 @@ public class RobertsBorder {
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
 
-                for (int y = 0; y < 2; ++y) {
-                    for (int x = 0; x < 2; ++x) {
-                        if (j + x >= image.getWidth() || i + y >= image.getHeight()) {
+                for (int y = -1, my = 0; y < 2; ++y, ++my) {
+                    for (int x = -1, mx = 0; x < 2; ++x, ++mx) {
+                        if (j + x >= image.getWidth() || i + y >= image.getHeight() || j + x < 0 || i + y < 0) {
                             color = 255 | (255 << 8) | (255 << 16);
                         } else {
                             color = image.getRGB(j + x, i + y);
@@ -35,13 +37,13 @@ public class RobertsBorder {
                         green = (color & 0xff00) >> 8;
                         blue = color & 0xff;
 
-                        rdx += red * robertsX[y * 2 + x];
-                        bdx += blue * robertsX[y * 2 + x];
-                        gdx += green * robertsX[y * 2 + x];
+                        rdx += red * sobelX[my * 3 + mx];
+                        bdx += blue * sobelX[my * 3 + mx];
+                        gdx += green * sobelX[my * 3 + mx];
 
-                        rdy += red * robertsY[y * 2 + x];
-                        bdy += blue * robertsY[y * 2 + x];
-                        gdy += green * robertsY[y * 2 + x];
+                        rdy += red * sobelY[my * 3 + mx];
+                        bdy += blue * sobelY[my * 3 + mx];
+                        gdy += green * sobelY[my * 3 + mx];
                     }
                 }
 
@@ -67,3 +69,4 @@ public class RobertsBorder {
         }
     }
 }
+

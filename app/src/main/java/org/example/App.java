@@ -4,6 +4,7 @@
 package org.example;
 
 import Factory.MainFactory;
+import controller.ICGFilter;
 
 public class App {
     //private static Object MainFactory;
@@ -16,5 +17,8 @@ public class App {
         //String a  = getGreeting();
         MainFactory.initFactory();
         MainFactory.createModels();
+
+        ICGFilter filter = new ICGFilter();
+        filter.start();
     }
 }

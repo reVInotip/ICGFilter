@@ -1,5 +1,5 @@
 {
-	"modelPath": "model.filters.Inversion",
+	"modelPath": "model.filters.filters.Inversion",
 	"dialogFormExist": true,
 	"dialogFormConfig": {
 		"name": "firstDialogWindow",

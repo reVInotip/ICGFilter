@@ -1,6 +1,6 @@
-package model;
+package model.filters;
 
-import model.filterModels.ModelPrototype;
+import model.filters.filterModels.ModelPrototype;
 import objectsFromJson.parsedConfigurationObjects.DialogElement;
 import objectsFromJson.parsedConfigurationObjects.ModelConfig;
 

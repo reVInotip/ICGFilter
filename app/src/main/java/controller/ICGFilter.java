@@ -1,14 +1,17 @@
 package controller;
 
 import controller.filtersWorker.FilterManager;
+import model.MainModel;
 
 public class ICGFilter {
-    //private MainForm mainForm;
     private final FilterManager filterManager = new FilterManager();
+    private final MainModel model = MainModel.create();
 
-    ICGFilter(){
-        createToolsButtons();
-
+    public ICGFilter() {
+        //createToolsButtons();
+        if (model == null) {
+            throw new RuntimeException("Model is null exception");
+        }
     }
 
 
@@ -20,4 +23,7 @@ public class ICGFilter {
 //        }
     }
 
+    public void start() {
+        model.start();
+    }
 }

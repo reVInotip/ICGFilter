@@ -1,4 +1,4 @@
-package model.filters;
+package model.filters.filters;
 
 import java.awt.image.BufferedImage;
 
