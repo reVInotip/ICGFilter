@@ -15,5 +15,6 @@ public class App {
     public static void main(String[] args) {
         //String a  = getGreeting();
         MainFactory.initFactory();
+        MainFactory.createModels();
     }
 }
