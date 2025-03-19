@@ -3,13 +3,17 @@ package controller;
 import controller.component.ComponentUpdate;
 import controller.filtersWorker.FilterManager;
 import model.MainModel;
+import model.ModelTasksManager;
+import model.tasks.ApplyTask;
+import view.MainFrame;
 
 public class ICGFilter {
-    private final FilterManager filterManager = new FilterManager();
-    private final MainModel model = MainModel.create();
+    private final MainModel model;
+    MainFrame mainFrame = MainFrame.create();
 
     public ICGFilter() {
-        //createToolsButtons();
+        model = MainModel.create(mainFrame);
+        createToolsButtons();
         if (model == null) {
             throw new RuntimeException("Model is null exception");
         }
@@ -17,11 +21,11 @@ public class ICGFilter {
 
 
     private void createToolsButtons() {
-//        mainFrame.addToolsButtons(toolManager.getAvailableTools().toArray(new String[0]),
-//                toolManager.getToolsDescription(), toolManager.getToolsIcons());
-//        for (String tool: toolManager.getAvailableTools()) {
-//            mainFrame.addToolActionListener(tool, actionEvent -> toolManager.switchTool(tool));
-//        }
+        mainFrame.addToolsButtons(model.getNameFilters(),
+                model.getFiltersDescription(), model.getFiltersDescription());
+        for (String filter: model.getNameFilters()) {
+            mainFrame.addToolActionListener(filter, actionEvent -> MainModel.switchFilter(filter));
+        }
     }
 
     public void start() {

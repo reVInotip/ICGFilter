@@ -1,12 +1,14 @@
 package model.filters.filters;
 
+import event.Event;
+import model.events.FiltrationCompletedEvent;
 import model.filters.Filter;
-import model.filters.IFiltersModel;
+import model.filters.FiltersModel;
 
 import java.awt.image.BufferedImage;
 
 @Filter(descr = "Инверсия", icon = "")
-public class Inversion extends IFiltersModel {
+public class Inversion extends FiltersModel {
     @Override
     public void convert(BufferedImage image) {
         int color, red, green, blue;
@@ -22,5 +24,7 @@ public class Inversion extends IFiltersModel {
                 image.setRGB(j, i, color);
             }
         }
+
+        update(new FiltrationCompletedEvent(image));
     }
 }
