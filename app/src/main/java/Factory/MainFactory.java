@@ -1,7 +1,7 @@
 package Factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import model.filters.ModelFactory;
+import model.FiltersFactory;
 import objectsFromJson.ConfigsPath;
 import objectsFromJson.ConfigPath;
 import objectsFromJson.parsedConfigurationObjects.ModelConfig;
@@ -53,15 +53,15 @@ public class MainFactory {
         }
 
 
-        ModelFactory.initFactory(allInfAtConfig);
+        FiltersFactory.initFactory(allInfAtConfig);
 
         //DialogFactory.initFactory(allInfAtConfig);
     }
 
     public static void createModels() {
-        ModelFactory.createFilters();
+        FiltersFactory.createFilters();
         for (Map.Entry<String, ModelConfig> modelInfo: allInfAtConfig.entrySet()) {
-            ModelFactory.createFilterModel(modelInfo.getKey(), modelInfo.getValue());
+            FiltersFactory.createFilterModel(modelInfo.getKey(), modelInfo.getValue());
         }
     }
 }

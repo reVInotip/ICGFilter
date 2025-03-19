@@ -1,5 +1,7 @@
-package model.filters;
+package model;
 
+import model.filters.Filter;
+import model.filters.IFiltersModel;
 import model.filters.filterModels.ModelPrototype;
 import objectsFromJson.parsedConfigurationObjects.DialogElement;
 import objectsFromJson.parsedConfigurationObjects.ModelConfig;
@@ -8,8 +10,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModelFactory {
+public class FiltersFactory {
     static private final HashMap<String, Class<IFiltersModel>> filters = new HashMap<>();
+    static final Map<String, String> filtersDescr = new HashMap<>();
+    static final Map<String, String> filtersIcons = new HashMap<>();
 
     public static void initFactory(HashMap<String, ModelConfig> allInfAtConfig) {
         String name;
@@ -21,8 +25,17 @@ public class ModelFactory {
             try {
                 Class<?> filterClass = Class.forName(filterData.getModelPath());
 
-                if (filterClass.getSuperclass().getName().equals(IFiltersModel.class.getName())) {
+                if (filterClass.getSuperclass().getName().equals(IFiltersModel.class.getName()) && filterClass.isAnnotationPresent(Filter.class)) {
                     filters.put(name, (Class<IFiltersModel>) filterClass);
+
+                    if (!filterClass.getAnnotation(Filter.class).descr().isEmpty()) {
+                        filtersDescr.put(name, filterClass.getAnnotation(Filter.class).descr());
+                    }
+
+                    if (!filterClass.getAnnotation(Filter.class).descr().isEmpty()) {
+                        filtersIcons.put(name, filterClass.getAnnotation(Filter.class).icon());
+                    }
+
                 }
             } catch (ClassNotFoundException e) {
                 System.out.println("Can not load class \"" + name + "\" located in path: " +
