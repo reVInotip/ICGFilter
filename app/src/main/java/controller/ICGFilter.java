@@ -22,9 +22,9 @@ public class ICGFilter {
 
     private void createToolsButtons() {
         mainFrame.addToolsButtons(model.getNameFilters(),
-                model.getFiltersDescription(), model.getFiltersDescription());
+                model.getFiltersDescription(), model.getFiltersIcons());
         for (String filter: model.getNameFilters()) {
-            mainFrame.addToolActionListener(filter, actionEvent -> MainModel.switchFilter(filter));
+            mainFrame.addToolActionListener(filter, actionEvent -> model.switchFilter(filter));
         }
     }
 

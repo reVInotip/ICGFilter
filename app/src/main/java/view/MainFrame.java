@@ -5,6 +5,7 @@ import event.StartEvent;
 import event.observers.Observer;
 import model.MainModel;
 import model.ModelTasksManager;
+import model.tasks.ApplyTask;
 import model.tasks.LoadTask;
 import model.tasks.SaveTask;
 import view.components.Frame;
@@ -33,14 +34,21 @@ public class MainFrame extends Frame implements Observer {
         addToolbarSeparator();
     }
 
+    private void createApplyButton(ActionListener applyListener) {
+        addToolbarButton("Apply", "применение фильтра", "/utils/apply.png", applyListener);
+        addToolbarSeparator();
+    }
+
+
     private void createLoadButton(ActionListener loadListener) {
         addToolbarButton("load", "Открывает изображение", "/utils/open.png", loadListener);
         addToolbarSeparator();
     }
 
-    private void createToolbarButtons(ActionListener saveListener, ActionListener loadListener) {
+    private void createToolbarButtons(ActionListener saveListener, ActionListener loadListener, ActionListener applyListener) {
         createSaveButton(saveListener);
         createLoadButton(loadListener);
+        createApplyButton(applyListener);
     }
 
     private MainFrame() {
@@ -72,7 +80,11 @@ public class MainFrame extends Frame implements Observer {
             }
         };
 
-        createToolbarButtons(saveListener, loadListener);
+        ActionListener applyListener = action -> {
+            ModelTasksManager.addTask(new ApplyTask(MainModel.getSelectedFilter()));
+        };
+
+        createToolbarButtons(saveListener, loadListener, applyListener);
     }
 
     public List<Observer> getInternalObservers() {

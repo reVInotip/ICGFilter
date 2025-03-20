@@ -39,7 +39,12 @@ class ImageWorker extends Observable {
         }
     }
 
-    public BufferedImage getImage() {
-        return filteredImage;
+    public BufferedImage getLoadedImage() {
+        return loadedImage;
     }
+
+    public void setImage(BufferedImage bufferedImage) {
+        filteredImage = bufferedImage;
+    }
+
 }

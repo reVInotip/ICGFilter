@@ -6,6 +6,9 @@ import event.RepaintEvent;
 import event.StartEvent;
 import event.observers.Observable;
 import event.observers.Observer;
+import model.events.FiltrationCompletedEvent;
+import model.events.ModelEvent;
+import model.events.ModelObserver;
 import model.filters.FiltersModel;
 import view.MainFrame;
 
@@ -14,7 +17,7 @@ import java.util.Map;
 
 import java.awt.event.ComponentAdapter;
 
-public class MainModel extends Observable {
+public class MainModel extends Observable implements ModelObserver {
     public static final int WIDTH = 640;
     public static final int HEIGHT = 480;
 
@@ -28,8 +31,6 @@ public class MainModel extends Observable {
     public static MainModel create(MainFrame mainFrame) {
         if (!isCreated) {
             isCreated = true;
-            ModelTasksManager.setImageWorker(imageWorker);
-            ModelTasksManager.setFilters(filters);
             return new MainModel(mainFrame);
         }
 
@@ -37,12 +38,12 @@ public class MainModel extends Observable {
     }
 
     private MainModel(MainFrame mainFrame) {
-        ModelTasksManager.setModel(this);
+        ModelTasksManager.setImageWorker(imageWorker);
+        ModelTasksManager.setFilters(filters, this);
 
         add(mainFrame);
 
         imageWorker.add(mainFrame);
-        //ModelTasksManager.add(mainFrame);
 
         assert mainFrame != null;
         for (Observer observer: mainFrame.getInternalObservers()) {
@@ -55,8 +56,12 @@ public class MainModel extends Observable {
         update(new StartEvent(stateChangeAdapter));
     }
 
+    public void switchFilter(String filter){
+        selectedFilter = filter;
+    }
+
     public void stateChanged() {
-        update(new RepaintEvent(imageWorker.getImage()));
+        update(new RepaintEvent(imageWorker.getLoadedImage()));
     }
 
     public void SendEvent(Event event){
@@ -71,11 +76,20 @@ public class MainModel extends Observable {
         return FiltersFactory.filtersIcons;
     }
 
-    public static void switchFilter(String filter){
-        selectedFilter = filter;
+    public static String getSelectedFilter(){
+        return selectedFilter;
     }
 
     public String[] getNameFilters() {
         return filters.keySet().toArray(new String[0]);
+    }
+
+    @Override
+    public void update(ModelEvent event) {
+        if (event instanceof FiltrationCompletedEvent){
+            FiltrationCompletedEvent filtrationCompletedEvent = (FiltrationCompletedEvent) event;
+            ModelTasksManager.setNewImage(filtrationCompletedEvent.image);
+            update(new RepaintEvent(filtrationCompletedEvent.image));
+        }
     }
 }

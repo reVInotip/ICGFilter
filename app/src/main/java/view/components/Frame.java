@@ -1,8 +1,12 @@
 package view.components;
 
+import objectsFromJson.ConfigsPath;
+import org.example.App;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -168,7 +172,8 @@ public class Frame extends JFrame {
 
             FilterItem filterItem = new FilterItem();
             filterItem.button = menuButton;
-            filterItem.item = menuBar.getMenu(menuHashMap.get("View")).add(menuButton);
+
+            filterItem.item = menuBar.getMenu(menuHashMap.get("Filter")).add(menuButton);
             filtersHashMap.put(tool, filterItem);
         }
     }

@@ -1,12 +1,21 @@
 package model.filters.filters;
 
+import model.events.FiltrationCompletedEvent;
+import model.filters.Filter;
+import model.filters.FiltersModel;
+
 import java.awt.image.BufferedImage;
 
-public class GammaCorrection {
-    static private double gamma = 2.2;
+@Filter(descr = "изменение гаммы", icon = "/utils/gamma.png")
+public class GammaCorrection extends FiltersModel {
+    static private double gamma = 3;
 
-    static public void apply(BufferedImage image) {
+    @Override
+    public void convert(BufferedImage image) {
         int color, red, green, blue;
+
+        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
                 color = image.getRGB(j, i);
@@ -15,8 +24,10 @@ public class GammaCorrection {
                 blue = (int) (255 * Math.pow((color & 0xff) / 255.0, 1 / gamma));
 
                 color = blue | (green << 8) | (red << 16);
-                image.setRGB(j, i, color);
+                result.setRGB(j, i, color);
             }
         }
+
+        update(new FiltrationCompletedEvent(result));
     }
 }
