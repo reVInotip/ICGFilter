@@ -1,9 +1,5 @@
 package model;
 
-import event.RepaintEvent;
-import model.events.FiltrationCompletedEvent;
-import model.events.ModelEvent;
-import model.events.ModelObserver;
 import model.filters.FiltersModel;
 import model.tasks.ApplyTask;
 import model.tasks.LoadTask;
@@ -44,7 +40,7 @@ public class ModelTasksManager {
     public static void run() {
         Task currTask = taskList.getFirst();
 
-        taskList.remove(taskList.size() - 1);
+        taskList.removeLast();
 
         if (currTask instanceof LoadTask loadTask) {
             imageWorker.load(loadTask.imagePath, loadTask.imageName);

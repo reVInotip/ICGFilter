@@ -1,10 +1,7 @@
 package controller;
 
 import controller.component.ComponentUpdate;
-import controller.filtersWorker.FilterManager;
 import model.MainModel;
-import model.ModelTasksManager;
-import model.tasks.ApplyTask;
 import view.MainFrame;
 
 public class ICGFilter {

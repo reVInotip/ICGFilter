@@ -1,7 +1,6 @@
 package model;
 
 import Factory.MainFactory;
-import event.Event;
 import event.RepaintEvent;
 import event.StartEvent;
 import event.observers.Observable;
@@ -26,7 +25,7 @@ public class MainModel extends Observable implements ModelObserver {
 
     private static String selectedFilter = "def";
 
-    private static HashMap<String, FiltersModel> filters = MainFactory.createModels();
+    private static final HashMap<String, FiltersModel> filters = MainFactory.createModels();
 
     public static MainModel create(MainFrame mainFrame) {
         if (!isCreated) {
@@ -64,10 +63,6 @@ public class MainModel extends Observable implements ModelObserver {
         update(new RepaintEvent(imageWorker.getLoadedImage()));
     }
 
-    public void SendEvent(Event event){
-        update(event);
-    }
-
     public Map<String, String> getFiltersDescription() {
         return FiltersFactory.filtersDescr;
     }
@@ -86,8 +81,7 @@ public class MainModel extends Observable implements ModelObserver {
 
     @Override
     public void update(ModelEvent event) {
-        if (event instanceof FiltrationCompletedEvent){
-            FiltrationCompletedEvent filtrationCompletedEvent = (FiltrationCompletedEvent) event;
+        if (event instanceof FiltrationCompletedEvent filtrationCompletedEvent){
             ModelTasksManager.setNewImage(filtrationCompletedEvent.image);
             update(new RepaintEvent(filtrationCompletedEvent.image));
         }
