@@ -1,26 +1,35 @@
 package model.filters.filters;
 
+import event.Event;
+import model.events.FiltrationCompletedEvent;
 import model.filters.Filter;
-import model.filters.IFiltersModel;
+import model.filters.FiltersModel;
 
 import java.awt.image.BufferedImage;
 
-@Filter(descr = "Инверсия", icon = "")
-public class Inversion extends IFiltersModel {
+@Filter(descr = "инверсия", icon = "/utils/inversion.png")
+public class Inversion extends FiltersModel {
     @Override
     public void convert(BufferedImage image) {
+        if (image == null) {
+            throw new IllegalArgumentException("Image cannot be null");
+        }
+
         int color, red, green, blue;
+        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
                 color = image.getRGB(j, i);
-                red = 255 - ((color & 0xff0000) >> 16);
-                green = 255 - ((color & 0xff00) >> 8);
+                red = 255 - ((color >> 16) & 0xff);
+                green = 255 - ((color >> 8) & 0xff);
                 blue = 255 - (color & 0xff);
 
-                color = 0;
-                color |= blue | (green << 8) | (red << 16);
-                image.setRGB(j, i, color);
+                color = (red << 16) | (green << 8) | blue;
+                result.setRGB(j, i, color);
             }
         }
+
+        update(new FiltrationCompletedEvent(result));
     }
 }

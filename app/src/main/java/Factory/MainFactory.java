@@ -2,6 +2,7 @@ package Factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.FiltersFactory;
+import model.filters.FiltersModel;
 import objectsFromJson.ConfigsPath;
 import objectsFromJson.ConfigPath;
 import objectsFromJson.parsedConfigurationObjects.ModelConfig;
@@ -9,7 +10,6 @@ import org.example.App;
 
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Map;
 
 
 public class MainFactory {
@@ -58,10 +58,10 @@ public class MainFactory {
         //DialogFactory.initFactory(allInfAtConfig);
     }
 
-    public static void createModels() {
-        FiltersFactory.createFilters();
-        for (Map.Entry<String, ModelConfig> modelInfo: allInfAtConfig.entrySet()) {
-            FiltersFactory.createFilterModel(modelInfo.getKey(), modelInfo.getValue());
-        }
+    public static HashMap<String, FiltersModel> createModels() {
+        return FiltersFactory.createFilters();
+//        for (Map.Entry<String, ModelConfig> modelInfo: allInfAtConfig.entrySet()) {
+//            FiltersFactory.createFilterModel(modelInfo.getKey(), modelInfo.getValue());
+//        }
     }
 }

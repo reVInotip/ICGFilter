@@ -1,19 +1,14 @@
 {
-	"modelPath": "model.filters.filters.Inversion",
+	"modelPath": "model.filters.filters.GammaCorrection",
 	"dialogFormExist": true,
 	"dialogFormConfig": {
 		"name": "firstDialogWindow",
 		"elements": [{
-			"name": "firstElement",
+			"name": "величина гаммы",
 			"type": "int",
 			"max": 100,
 			"min": 10,
 			"step": 5
-		},{
-			"name": "secondElement",
-			"type": "matrix",
-			"max": 5,
-			"min": 3
 		}]
 	}
 }
