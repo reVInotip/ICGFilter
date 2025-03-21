@@ -2,6 +2,7 @@
 	"ConfigPath":[
 	{"name": "inversion", "path": "/configs/inversionConfig.json"},
 	{"name": "gamma", "path": "/configs/gammaConfig.json"},
-	{"name": "three", "path": "/configs/conf3.json"}
+	{"name": "embossing", "path": "/configs/embossingConfig.json"},
+	{"name": "toBlackAndWhite", "path": "/configs/converterToBlackAndWhiteConfig.json"}
 	]
 }

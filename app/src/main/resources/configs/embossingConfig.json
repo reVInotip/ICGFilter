@@ -1,6 +1,6 @@
 {
-	"modelPath": "path",
-	"dialogFormExist": true,
+	"modelPath": "model.filters.filters.Embossing",
+	"dialogFormExist": false,
 	"dialogFormConfig": {
 		"name": "firstDialogWindow",
 		"elements": [{
