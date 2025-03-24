@@ -1,7 +1,7 @@
 package model;
 
 import model.filters.Filter;
-import model.filters.IFiltersModel;
+import model.filters.FiltersModel;
 import model.filters.filterModels.ModelPrototype;
 import objectsFromJson.parsedConfigurationObjects.DialogElement;
 import objectsFromJson.parsedConfigurationObjects.ModelConfig;
@@ -11,9 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FiltersFactory {
-    static private final HashMap<String, Class<IFiltersModel>> filters = new HashMap<>();
+    static private final HashMap<String, Class<FiltersModel>> filters = new HashMap<>();
     static final Map<String, String> filtersDescr = new HashMap<>();
     static final Map<String, String> filtersIcons = new HashMap<>();
+
 
     public static void initFactory(HashMap<String, ModelConfig> allInfAtConfig) {
         String name;
@@ -25,8 +26,8 @@ public class FiltersFactory {
             try {
                 Class<?> filterClass = Class.forName(filterData.getModelPath());
 
-                if (filterClass.getSuperclass().getName().equals(IFiltersModel.class.getName()) && filterClass.isAnnotationPresent(Filter.class)) {
-                    filters.put(name, (Class<IFiltersModel>) filterClass);
+                if (filterClass.getSuperclass().getName().equals(FiltersModel.class.getName()) && filterClass.isAnnotationPresent(Filter.class)) {
+                    filters.put(name, (Class<FiltersModel>) filterClass);
 
                     if (!filterClass.getAnnotation(Filter.class).descr().isEmpty()) {
                         filtersDescr.put(name, filterClass.getAnnotation(Filter.class).descr());
@@ -44,7 +45,7 @@ public class FiltersFactory {
         }
     }
 
-    private static IFiltersModel createFilter(Class<IFiltersModel> filterClass) {
+    private static FiltersModel createFilter(Class<FiltersModel> filterClass) {
         try {
             return filterClass.getConstructor().newInstance();
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
@@ -54,13 +55,12 @@ public class FiltersFactory {
         }
     }
 
-    public static HashMap<String, IFiltersModel> createFilters() {
-        HashMap<String, IFiltersModel> filterObjts = new HashMap<>();
-        for (Map.Entry<String, Class<IFiltersModel>> filterClass: filters.entrySet()) {
-            filterObjts.put(filterClass.getKey(), createFilter(filterClass.getValue()));
+    public static HashMap<String, FiltersModel> createFilters() {
+        HashMap<String, FiltersModel> filterObjects = new HashMap<>();
+        for (Map.Entry<String, Class<FiltersModel>> filterClass: filters.entrySet()) {
+            filterObjects.put(filterClass.getKey(), createFilter(filterClass.getValue()));
         }
-
-        return filterObjts;
+        return filterObjects;
     }
 
     public static ModelPrototype createFilterModel(String name, ModelConfig data) {

@@ -168,7 +168,8 @@ public class Frame extends JFrame {
 
             FilterItem filterItem = new FilterItem();
             filterItem.button = menuButton;
-            filterItem.item = menuBar.getMenu(menuHashMap.get("View")).add(menuButton);
+
+            filterItem.item = menuBar.getMenu(menuHashMap.get("Filter")).add(menuButton);
             filtersHashMap.put(tool, filterItem);
         }
     }
