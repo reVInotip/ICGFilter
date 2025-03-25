@@ -1,13 +1,10 @@
 {
-	"modelPath": "model.filters.filters.Embossing",
-	"dialogFormExist": false,
-	"dialogFormConfig": {
-		"name": "firstDialogWindow",
-		"elements": [{
-			"name": "firstElement",
-			"type": "matrix",
-			"max": 5,
-			"min": 3
-		}]
-	}
+	"filterPath": "org.example.model.filters.filters.Embossing",
+	"dialogWindowExist": false,
+	"filterParams": [{
+		"name": "firstElement",
+		"type": "matrix",
+		"max": 5,
+		"min": 3
+	}]
 }
