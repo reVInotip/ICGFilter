@@ -3,22 +3,19 @@
  */
 package org.example;
 
-import Factory.MainFactory;
-import controller.ICGFilter;
+import jsonParser.Parser;
+import org.example.controller.ICGFilter;
 
 public class App {
-    //private static Object MainFactory;
-
     public static String getGreeting() {
         return "Hello World!";
     }
 
     public static void main(String[] args) {
-        //String a  = getGreeting();
-        MainFactory.initFactory();
-        MainFactory.createModels();
+        Parser configParser = new Parser();
+        configParser.parse();
 
-        ICGFilter filter = new ICGFilter();
+        ICGFilter filter = new ICGFilter(configParser.getFilterDtos(), configParser.getPathsToFilters(), configParser.getFilterNames());
         filter.start();
     }
 }
