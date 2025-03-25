@@ -27,6 +27,10 @@ public class ModelPrototype {
     }
 
     public void setInteger(String name, int value) {
+        if (value < parameters.get(name).min || value > parameters.get(name).max) {
+            throw new RuntimeException("Invalid parameter");
+        }
+
         parameters.get(name).parameter = value;
     }
 

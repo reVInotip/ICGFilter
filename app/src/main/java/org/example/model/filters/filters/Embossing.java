@@ -3,12 +3,17 @@ package org.example.model.filters.filters;
 import org.example.model.events.FiltrationCompletedEvent;
 import org.example.model.filters.Filter;
 import org.example.model.filters.FilterPrototype;
+import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
 
 @Filter(descr = "эфект теснения", icon = "/utils/embossing.png")
 public class Embossing extends FilterPrototype {
     private static final int[][] EMBOSS_KERNEL = new int[][]{{-1, -1, 0}, {-1, 0, 1}, {0, 1, 1}};
+
+    public Embossing(ModelPrototype filterModel) {
+        super(filterModel);
+    }
 
     public void convert(BufferedImage image) {
         int width = image.getWidth();

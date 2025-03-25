@@ -3,11 +3,16 @@ package org.example.model.filters.filters;
 import org.example.model.events.FiltrationCompletedEvent;
 import org.example.model.filters.Filter;
 import org.example.model.filters.FilterPrototype;
+import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
 
 @Filter(descr = "инверсия", icon = "/utils/inversion.png")
 public class Inversion extends FilterPrototype {
+    public Inversion(ModelPrototype filterModel) {
+        super(filterModel);
+    }
+
     @Override
     public void convert(BufferedImage image) {
         if (image == null) {

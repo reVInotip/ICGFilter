@@ -3,12 +3,17 @@ package org.example.model.filters.filters;//
 import org.example.model.events.FiltrationCompletedEvent;
 import org.example.model.filters.Filter;
 import org.example.model.filters.FilterPrototype;
+import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
 
 @Filter(descr = "делает изображение чёрно-белым", icon = "/utils/blackAndWhite.png")
 public class ConverterToBlackAndWhite extends FilterPrototype {
-   public void convert(BufferedImage image) {
+    public ConverterToBlackAndWhite(ModelPrototype filterModel) {
+        super(filterModel);
+    }
+
+    public void convert(BufferedImage image) {
        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
        for(int x = 0; x < image.getWidth(); ++x) {
             for(int y = 0; y < image.getHeight(); ++y) {

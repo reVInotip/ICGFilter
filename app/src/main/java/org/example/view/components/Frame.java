@@ -8,6 +8,7 @@ import org.example.view.components.DialogsFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,7 +178,9 @@ public class Frame extends JFrame {
 
             if (dialogWindows.containsKey(tool)) {
                 ItemListener setVisibleListener = itemEvent -> {
-                    dialogWindows.get(tool).setVisible(true);
+                    if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                        dialogWindows.get(tool).setVisible(true);
+                    }
                 };
 
                 button.addItemListener(setVisibleListener);

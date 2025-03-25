@@ -2,7 +2,7 @@
 	"filterPath": "org.example.model.filters.filters.GammaCorrection",
 	"dialogWindowExist": true,
 	"filterParams": [{
-		"name": "величина гаммы",
+		"name": "gamma",
 		"type": "int",
 		"max": 100,
 		"min": 10,

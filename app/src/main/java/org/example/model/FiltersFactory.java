@@ -44,9 +44,9 @@ class FiltersFactory {
         }
     }
 
-    private static FilterPrototype createFilter(Class<FilterPrototype> filterClass) {
+    private static FilterPrototype createFilter(Class<FilterPrototype> filterClass, ModelPrototype filterModel) {
         try {
-            return filterClass.getConstructor().newInstance();
+            return filterClass.getConstructor(ModelPrototype.class).newInstance(filterModel);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
             System.err.println("Class not found");
@@ -54,10 +54,10 @@ class FiltersFactory {
         }
     }
 
-    public static HashMap<String, FilterPrototype> createFilters() {
+    public static HashMap<String, FilterPrototype> createFilters(HashMap<String, ModelPrototype> filterModels) {
         HashMap<String, FilterPrototype> filterObjects = new HashMap<>();
         for (Map.Entry<String, Class<FilterPrototype>> filterClass: filters.entrySet()) {
-            filterObjects.put(filterClass.getKey(), createFilter(filterClass.getValue()));
+            filterObjects.put(filterClass.getKey(), createFilter(filterClass.getValue(), filterModels.getOrDefault(filterClass.getKey(), null)));
         }
         return filterObjects;
     }

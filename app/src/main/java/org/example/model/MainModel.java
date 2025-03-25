@@ -50,8 +50,8 @@ public class MainModel extends Observable implements ModelObserver {
         this.pathsToFilters = pathsToFilters;
 
         FiltersFactory.initFactory(pathsToFilters);
-        filters = FiltersFactory.createFilters();
         filterModels = FiltersFactory.createFilterModels(filterDtos);
+        filters = FiltersFactory.createFilters(filterModels);
 
         ModelTasksManager.setImageWorker(imageWorker);
         ModelTasksManager.setFilters(filters, this);
