@@ -77,8 +77,6 @@ public class DialogPrototype extends JDialog {
 
         add(new JScrollPane(paramsPanel));
         setMinimumSize(new Dimension(300, 300));
-        setLocation((Toolkit.getDefaultToolkit().getScreenSize().width) / 2,
-                (Toolkit.getDefaultToolkit().getScreenSize().height) / 2);
-
+        setLocationRelativeTo(parent);
     }
 }
