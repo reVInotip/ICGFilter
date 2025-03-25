@@ -8,6 +8,7 @@ import org.example.view.components.DialogsFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -175,12 +176,12 @@ public class Frame extends JFrame {
             });
 
             if (dialogWindows.containsKey(tool)) {
-                ActionListener setVisibleListener = actionEvent -> {
+                ItemListener setVisibleListener = itemEvent -> {
                     dialogWindows.get(tool).setVisible(true);
                 };
 
-                button.addActionListener(setVisibleListener);
-                menuButton.addActionListener(setVisibleListener);
+                button.addItemListener(setVisibleListener);
+                menuButton.addItemListener(setVisibleListener);
             }
 
             menuButtonGroup.add(menuButton);
