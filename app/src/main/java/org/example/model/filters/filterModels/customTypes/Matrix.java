@@ -9,6 +9,7 @@ public class Matrix {
     public Matrix(int width, int height) {
         this.width = width;
         this.height = height;
+        this.data = new int[width * height];
     }
 
     public void set(int x, int y, int item) {
@@ -17,6 +18,10 @@ public class Matrix {
         }
 
         data[x * width + y] = item;
+    }
+
+    public int getWidth() {
+        return width;
     }
 
     public int get(int x, int y) {

@@ -34,23 +34,46 @@ public class ModelPrototype {
         parameters.get(name).parameter = value;
     }
 
+    public void setMatrix(String name, Matrix value) {
+        parameters.get(name).parameter = value;
+    }
+
     public Integer getInteger(String name) {
         if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.INTEGER)) {
              return (Integer) parameters.get(name).parameter;
         }
+        else {
+            throw new RuntimeException("Invalid parameter");
+        }
+    }
 
-        return null;
+    public Double getDouble(String name) {
+        if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.DOUBLE)) {
+            return (Double) parameters.get(name).parameter;
+        }
+        else {
+            throw new RuntimeException("Invalid parameter");
+        }
     }
 
     public Matrix getMatrix(String name) {
-        if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.MATRIX)) {
+        if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.MATRIX)
+                && parameters.get(name).parameter instanceof Matrix) {
             return (Matrix) parameters.get(name).parameter;
         }
-
-        return null;
+        else {
+            throw new RuntimeException("Invalid parameter");
+        }
     }
 
     public String getName() {
         return name;
+    }
+
+    public void setDouble(String paramName, double value) {
+        if (value < (double)parameters.get(paramName).min || value > (double)parameters.get(paramName).max) {
+            throw new RuntimeException("Invalid parameter");
+        }
+        parameters.get(paramName).parameter = value;
     }
 }

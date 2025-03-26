@@ -3,6 +3,8 @@
 	{"name": "inversion", "path": "/configs/inversionConfig.json"},
 	{"name": "gamma", "path": "/configs/gammaConfig.json"},
 	{"name": "embossing", "path": "/configs/embossingConfig.json"},
-	{"name": "toBlackAndWhite", "path": "/configs/converterToBlackAndWhiteConfig.json"}
+	{"name": "toBlackAndWhite", "path": "/configs/converterToBlackAndWhiteConfig.json"},
+	{"name": "orderedDither", "path": "/configs/orderedDither.json"},
+	{"name": "gaussianBlur", "path": "/configs/gaussianBlur.json"}
 	]
 }

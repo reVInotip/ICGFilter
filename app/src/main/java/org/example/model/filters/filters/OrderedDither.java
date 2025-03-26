@@ -1,8 +1,13 @@
 package org.example.model.filters.filters;
 
-import java.awt.image.BufferedImage;
+import org.example.model.events.FiltrationCompletedEvent;
+import org.example.model.filters.Filter;
+import org.example.model.filters.FilterPrototype;
+import org.example.model.filters.filterModels.ModelPrototype;
 
-public class OrderedDither {
+import java.awt.image.BufferedImage;
+@Filter(descr = "Дизеринг", icon = "")
+public class OrderedDither extends FilterPrototype {
     static final private int[] matrix = {
             0, 32, 8, 40, 2, 34, 10, 42,
             48, 16, 56, 24, 50, 18, 58, 26,
@@ -17,6 +22,10 @@ public class OrderedDither {
     static final private int matrixHeight = 8;
     static final private int matrixWidth = 8;
 
+    public OrderedDither(ModelPrototype filterModel) {
+        super(filterModel);
+    }
+
     static private int transform(int intensity, int x, int y) {
         if (intensity > normalizationK * matrix[y * matrixWidth + x]) {
             return 255;
@@ -25,7 +34,14 @@ public class OrderedDither {
         }
     }
 
-    static public void apply(BufferedImage image) {
+    public void convert(BufferedImage image) {
+
+        if (image == null) {
+            throw new IllegalArgumentException("Image cannot be null");
+        }
+
+        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+
         int color, red, green, blue, alpha, x, y;
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
@@ -40,8 +56,10 @@ public class OrderedDither {
 
                 color = 0;
                 color |= blue | (green << 8) | (red << 16) | (alpha << 24);
-                image.setRGB(j, i, color);
+                result.setRGB(j, i, color);
             }
         }
+
+        update(new FiltrationCompletedEvent(result));
     }
 }

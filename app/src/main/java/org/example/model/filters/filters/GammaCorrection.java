@@ -16,7 +16,9 @@ public class GammaCorrection extends FilterPrototype {
     @Override
     public void convert(BufferedImage image) {
         int color, red, green, blue;
-        int gamma = filterModel.getInteger("gamma"); // replace with double or float
+
+        Double gamma = filterModel.getDouble("gamma"); // replace with double or float
+
         BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
 
         for (int i = 0; i < image.getHeight(); ++i) {
