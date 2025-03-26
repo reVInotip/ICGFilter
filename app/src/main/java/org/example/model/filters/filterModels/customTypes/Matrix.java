@@ -29,6 +29,6 @@ public class Matrix {
             return data[x * width + y];
         }
 
-        return 0;
+        throw new RuntimeException("Invalid index");
     }
 }

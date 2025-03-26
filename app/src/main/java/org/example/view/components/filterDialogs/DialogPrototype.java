@@ -112,10 +112,7 @@ public class DialogPrototype extends JDialog {
 
         Matrix matrix = model.getMatrix(paramName);
 
-        if (matrix == null) {
-            matrix = new Matrix(minSize, minSize);
-            matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5)); // 3 колонки
-        }
+        matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5)); // 3 колонки
 
         updateMatrixPanel(matrixPanel, matrix, matrix.getWidth(), paramName);
 
