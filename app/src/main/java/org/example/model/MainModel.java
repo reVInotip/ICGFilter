@@ -87,7 +87,7 @@ public class MainModel extends Observable implements ModelObserver {
     }
 
     public void stateChanged() {
-        update(new RepaintEvent(imageWorker.getLoadedImage()));
+        update(new RepaintEvent(imageWorker.getFilteredImage()));
     }
 
     public static String getSelectedFilter(){

@@ -22,7 +22,22 @@ public class ModelPrototype {
         this.parameters.putAll(parameters);
     }
 
-    public void addParameter(String name, FieldType type, Object data, int max, int min, Integer step) {
+    public void addParameter(String name, FieldType type, int max, int min, Integer step) {
+        Object data;
+        switch (type) {
+            case INTEGER -> {
+                data = min;
+            }
+            case DOUBLE -> {
+                data = (double) min;
+            }
+            case MATRIX -> {
+                data = new Matrix(min, min);
+            }
+            default -> {
+                throw new RuntimeException("Invalid type");
+            }
+        }
         parameters.put(name, new Parameter(type, data, max, min, step));
     }
 

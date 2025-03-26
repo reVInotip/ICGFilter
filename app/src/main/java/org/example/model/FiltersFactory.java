@@ -35,7 +35,6 @@ class FiltersFactory {
                     if (!filterClass.getAnnotation(Filter.class).descr().isEmpty()) {
                         filtersIcons.put(filterName, filterClass.getAnnotation(Filter.class).icon());
                     }
-
                 }
             } catch (ClassNotFoundException e) {
                 System.out.println("Can not load class \"" + filterName + "\" located in path: " +
@@ -67,7 +66,7 @@ class FiltersFactory {
         FilterParam param;
         for (Map.Entry<String, FilterParam> filterParam: data.getFilterParams().entrySet()) {
             param = filterParam.getValue();
-            filterModel.addParameter(param.name, param.type, param.min,
+            filterModel.addParameter(param.name, param.type,
                     param.max, param.min, param.step);
         }
 
