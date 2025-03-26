@@ -3,12 +3,11 @@ package org.example.view.components.filterDialogs;
 import dto.FieldType;
 import dto.FilterParam;
 import org.example.model.filters.filterModels.ModelPrototype;
-import jsonParser.parsedConfigurationObjects.DialogElement;
+import org.example.model.filters.filterModels.customTypes.Matrix;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class DialogPrototype extends JDialog {
@@ -49,11 +48,139 @@ public class DialogPrototype extends JDialog {
         panel.add(elementSlider, gbc);
     }
 
+    private void addDoubleElement(JPanel panel, String paramName, double max, double min, int y) {
+
+        final JTextField textField = new JTextField(5);
+        textField.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        textField.setText(String.valueOf(min)); // Устанавливаем начальное значение. тут наверное будет баг
+
+        final int SCALE = 100;
+        final JSlider slider = new JSlider(JSlider.HORIZONTAL,
+                (int)(min * SCALE),
+                (int)(max * SCALE),
+                (int)(min * SCALE));
+
+        final JLabel label = new JLabel(paramName);
+
+        textField.addActionListener(e -> {
+            try {
+                double value = Double.parseDouble(textField.getText());
+                if (value < min || value > max) {
+                    JOptionPane.showMessageDialog(panel,
+                            "Значение должно быть от " + min + " до " + max,
+                            "Ошибка", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    slider.setValue((int)(value * SCALE));
+                    model.setDouble(paramName, value);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(panel,
+                        "Введите корректное число",
+                        "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        slider.addChangeListener(e -> {
+            double value = slider.getValue() / (double)SCALE;
+            textField.setText(String.valueOf(value));
+            model.setDouble(paramName, value);
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(label, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(textField, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y + 1;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panel.add(slider, gbc);
+    }
+
+    private void addMatrixElement(JPanel panel, String paramName, int maxSize, int minSize, int y) {
+
+        JLabel sizeLabel = new JLabel("Размер матрицы:");
+        JSpinner sizeSpinner = new JSpinner(new SpinnerNumberModel(minSize, minSize, maxSize, 1));
+
+        JPanel matrixPanel = new JPanel();
+
+        Matrix matrix = model.getMatrix(paramName);
+
+        if (matrix == null) {
+            matrix = new Matrix(minSize, minSize);
+            matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5)); // 3 колонки
+        }
+
+        updateMatrixPanel(matrixPanel, matrix, matrix.getWidth(), paramName);
+
+        updateMatrixPanel(matrixPanel, matrix, minSize, paramName);
+
+        sizeSpinner.addChangeListener(e -> {
+            int newSize = (int) sizeSpinner.getValue();
+            matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5)); // 3 колонки
+            Matrix newMatrix = new Matrix(minSize, minSize);
+            updateMatrixPanel(matrixPanel, newMatrix, newSize, paramName);
+            panel.revalidate();
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(sizeLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(sizeSpinner, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = y + 1;
+        gbc.gridwidth = 2;
+        panel.add(matrixPanel, gbc);
+        gbc.gridwidth = 1;
+    }
+
+    private void updateMatrixPanel(JPanel matrixPanel, Matrix matrix, int size, String paramName) {
+        matrixPanel.removeAll();
+
+        // Создаем текстовые поля для каждого элемента матрицы
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                JTextField field = new JTextField(3);
+                field.setHorizontalAlignment(JTextField.CENTER);
+                field.setText(String.valueOf(matrix.get(x, y)));
+
+                final int finalX = x;
+                final int finalY = y;
+                field.addActionListener(e -> {
+                    try {
+                        int value = Integer.parseInt(field.getText());
+                        matrix.set(finalX, finalY, value);
+                        model.setMatrix(paramName, matrix);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(matrixPanel,
+                                "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+
+                matrixPanel.add(field);
+            }
+        }
+    }
+
     private void addElement(JPanel panel, FilterParam element, int y) {
         if (element.type == FieldType.INTEGER) {
             addSimpleElement(panel, element.name, element.max, element.min, element.step, y);
-        } else {
-
+        } else if (element.type == FieldType.DOUBLE){
+            addDoubleElement(panel, element.name, element.max, element.min, y);
+        } else if (element.type == FieldType.MATRIX) {
+            addMatrixElement(panel, element.name, element.max, element.min, y);
         }
     }
 

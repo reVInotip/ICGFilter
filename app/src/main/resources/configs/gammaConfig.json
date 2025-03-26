@@ -3,7 +3,7 @@
 	"dialogWindowExist": true,
 	"filterParams": [{
 		"name": "gamma",
-		"type": "int",
+		"type": "double",
 		"max": 100,
 		"min": 10,
 		"step": 5
