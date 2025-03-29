@@ -66,17 +66,11 @@ public class DialogPrototype extends JDialog {
         textField.addActionListener(e -> {
             try {
                 double value = Double.parseDouble(textField.getText());
-                if (value < min || value > max) {
-                    JOptionPane.showMessageDialog(panel,
-                            "Значение должно быть от " + min + " до " + max,
-                            "Ошибка", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    slider.setValue((int)(value * SCALE));
-                    model.setDouble(paramName, value);
-                }
+                slider.setValue((int)(value * SCALE));
+                model.setDouble(paramName, value);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(panel,
-                        "Введите корректное число",
+                        "Введите корректное значение",
                         "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
         });

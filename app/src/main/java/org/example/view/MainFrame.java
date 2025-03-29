@@ -13,6 +13,9 @@ import org.example.model.tasks.SaveTask;
 import org.example.view.components.Frame;
 
 import java.awt.*;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,8 +104,23 @@ public class MainFrame extends Frame implements Observer {
     public void update(Event event) {
         if (event instanceof StartEvent startEvent) {
             addComponentListener(startEvent.stateChangeAdapter);
+            addDrawPanelMouseListener(startEvent.panelMouseAdapter);
+            addDrawPanelMouseMotionListener(startEvent.panelMouseAdapter);
+            addDrawPanelMouseWheelListener(startEvent.panelMouseAdapter);
             showFrame();
         }
+    }
+
+    public void addDrawPanelMouseListener(MouseListener l) {
+        panel.addMouseListener(l);
+    }
+
+    public void addDrawPanelMouseMotionListener(MouseMotionListener l) {
+        panel.addMouseMotionListener(l);
+    }
+
+    public void addDrawPanelMouseWheelListener(MouseWheelListener l) {
+        panel.addMouseWheelListener(l);
     }
 
     public void addToolsButtons(List<String> tools, Map<String, String> toolsDescr, Map<String, String> icons) {

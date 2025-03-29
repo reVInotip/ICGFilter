@@ -2,6 +2,8 @@ package org.example.view.components;
 
 import org.example.event.Event;
 import org.example.event.RepaintEvent;
+import org.example.event.ResizeImgEvent;
+import org.example.event.ShiftImgEvent;
 import org.example.event.observers.Observer;
 
 import javax.swing.*;
@@ -9,27 +11,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
-public class Panel extends JPanel implements Observer, MouseListener, MouseMotionListener, MouseWheelListener {
+//public class Panel extends JPanel implements Observer, MouseListener, MouseMotionListener, MouseWheelListener {
+public class Panel extends JPanel implements Observer{
     private RepaintEvent event;
     private Dimension panelSize; // Видимый размер изображения
     private BufferedImage img; // изображение
     private Dimension imSize = null;   // Реальный размер изображения
-    private int lastX = 0; // Последняя координата X мыши
-    private int lastY = 0; // Последняя координата Y мыши
 
     public Panel() {
         super();
         setBackground(Color.GRAY);
-
-        addMouseListener(this);
-        addMouseMotionListener(this);
-        addMouseWheelListener(this);
     }
-    //
-    //
-    //чуть позже, если понадобиться вынесу это в контроллер, но пока как демо версия пусть будет тут!
-    // это реализация прибележения и отдаления изображения
-    //
     @Override
     public void update(Event event) {
         if (event instanceof RepaintEvent repaintEvent) {
@@ -43,11 +35,43 @@ public class Panel extends JPanel implements Observer, MouseListener, MouseMotio
                 }
 
                 setPreferredSize(panelSize);
+            }
+        } else if (event instanceof ResizeImgEvent resizeImgEvent) {
+            if (img == null || imSize == null) {
+                return;
+            }
 
-                revalidate();
-                repaint();
+            int newPW = (int) (panelSize.width * resizeImgEvent.magnificationSize);
+
+            // Обновление размеров панели
+            panelSize.width = newPW;
+            panelSize.height = (int) ((long) panelSize.width * imSize.height / imSize.width);
+
+            setPreferredSize(panelSize);
+        } else if (event instanceof ShiftImgEvent shiftImgEvent) {
+            // Получаем текущую позицию прокрутки
+            if (getParent() instanceof JViewport viewport) {
+                Point scroll = viewport.getViewPosition();
+                Dimension viewportSize = viewport.getSize();
+
+                int newScrollX = scroll.x + shiftImgEvent.deltaX;
+                int newScrollY = scroll.y + shiftImgEvent.deltaY;
+
+
+                if (newScrollX < 0 || newScrollX > panelSize.width - viewportSize.width) {
+                    return;
+                }
+
+                if (newScrollY < 0 || newScrollY > panelSize.height - viewportSize.height) {
+                    return;
+                }
+
+                viewport.setViewPosition(new Point(newScrollX, newScrollY));
             }
         }
+
+        revalidate();
+        repaint();
     }
 
     @Override
@@ -70,84 +94,4 @@ public class Panel extends JPanel implements Observer, MouseListener, MouseMotio
             g2d.dispose();
         }
     }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        // Сохраняем координаты мыши при нажатии
-        if ((e.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) == MouseEvent.BUTTON3_DOWN_MASK) {
-            lastX = e.getX();
-            lastY = e.getY();
-        }
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if (e.getModifiersEx() != MouseEvent.BUTTON3_DOWN_MASK) {
-            return; // Если не правая кнопка, выходим из метода
-        }
-
-        // Получаем текущую позицию прокрутки
-        if (getParent() instanceof JViewport viewport) {
-            Point scroll = viewport.getViewPosition();
-            Dimension viewportSize = viewport.getSize();
-
-            int deltaX = lastX - e.getX();
-            int deltaY = lastY - e.getY();
-
-            int newScrollX = scroll.x + deltaX;
-            int newScrollY = scroll.y + deltaY;
-
-
-            if (newScrollX < 0 || newScrollX > panelSize.width - viewportSize.width) {
-                return;
-            }
-
-            if (newScrollY < 0 || newScrollY > panelSize.height - viewportSize.height) {
-                return;
-            }
-
-            viewport.setViewPosition(new Point(newScrollX, newScrollY));
-
-            repaint();
-        }
-    }
-
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        if (img == null || imSize == null) {
-            return;
-        }
-
-        double zoomK = 0.05;
-        double k = 1 - e.getWheelRotation() * zoomK;
-
-        int newPW = (int) (panelSize.width * k);
-        if (newPW == (int) (newPW * (1 + zoomK))) {
-            return;
-        }
-
-        // Обновление размеров панели
-        panelSize.width = newPW;
-        panelSize.height = (int) ((long) panelSize.width * imSize.height / imSize.width);
-
-        setPreferredSize(panelSize);
-
-        revalidate();
-        repaint();
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {}
-
-    @Override
-    public void mouseReleased(MouseEvent e) {}
-
-    @Override
-    public void mouseEntered(MouseEvent e) {}
-
-    @Override
-    public void mouseExited(MouseEvent e) {}
-
-    @Override
-    public void mouseMoved(MouseEvent e) {}
 }

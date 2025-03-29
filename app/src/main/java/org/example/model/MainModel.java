@@ -1,7 +1,10 @@
 package org.example.model;
 
 import dto.FilterDto;
+import org.example.controller.component.PanelMouseAdapter;
 import org.example.event.RepaintEvent;
+import org.example.event.ResizeImgEvent;
+import org.example.event.ShiftImgEvent;
 import org.example.event.StartEvent;
 import org.example.event.observers.Observable;
 import org.example.event.observers.Observer;
@@ -78,8 +81,8 @@ public class MainModel extends Observable implements ModelObserver {
         }
     }
 
-    public void start(ComponentAdapter stateChangeAdapter) {
-        update(new StartEvent(stateChangeAdapter));
+    public void start(ComponentAdapter stateChangeAdapter, PanelMouseAdapter panelMouseAdapter) {
+        update(new StartEvent(stateChangeAdapter, panelMouseAdapter));
     }
 
     public void switchFilter(String filter){
@@ -88,6 +91,14 @@ public class MainModel extends Observable implements ModelObserver {
 
     public void stateChanged() {
         update(new RepaintEvent(imageWorker.getFilteredImage()));
+    }
+
+    public void resizePanel(double magnificationSize) {
+        update(new ResizeImgEvent(magnificationSize));
+    }
+
+    public void shiftPanel(int deltaX, int deltaY) {
+        update(new ShiftImgEvent(deltaX, deltaY));
     }
 
     public static String getSelectedFilter(){
