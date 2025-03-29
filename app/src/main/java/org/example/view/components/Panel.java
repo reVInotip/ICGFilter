@@ -36,6 +36,7 @@ public class Panel extends JPanel implements Observer{
 
                 setPreferredSize(panelSize);
             }
+            CursorManager.defaultCursor();
         } else if (event instanceof ResizeImgEvent resizeImgEvent) {
             if (img == null || imSize == null) {
                 return;

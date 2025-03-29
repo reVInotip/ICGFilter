@@ -108,7 +108,6 @@ public class MainModel extends Observable implements ModelObserver {
     @Override
     public void update(ModelEvent event) {
         if (event instanceof FiltrationCompletedEvent filtrationCompletedEvent){
-            ModelTasksManager.setNewImage(filtrationCompletedEvent.image);
             update(new RepaintEvent(filtrationCompletedEvent.image));
         }
     }

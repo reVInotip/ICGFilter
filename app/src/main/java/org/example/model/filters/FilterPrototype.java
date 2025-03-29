@@ -12,7 +12,8 @@ public abstract class FilterPrototype extends ModelObservable {
         this.filterModel = filterModel;
     }
 
-    public void convert(BufferedImage image) {
+    public void convert(BufferedImage image, BufferedImage result) {
 
     }
+
 }

@@ -14,23 +14,20 @@ public class Inversion extends FilterPrototype {
     }
 
     @Override
-    public void convert(BufferedImage image) {
-        if (image == null) {
-            throw new IllegalArgumentException("Image cannot be null");
-        }
+    public void convert(BufferedImage image, BufferedImage result) {
 
-        int color, red, green, blue;
-        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
 
-        for (int i = 0; i < image.getHeight(); ++i) {
-            for (int j = 0; j < image.getWidth(); ++j) {
-                color = image.getRGB(j, i);
-                red = 255 - ((color >> 16) & 0xff);
-                green = 255 - ((color >> 8) & 0xff);
-                blue = 255 - (color & 0xff);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int color = image.getRGB(x, y);
 
-                color = (red << 16) | (green << 8) | blue;
-                result.setRGB(j, i, color);
+                int alpha = (color >> 24) & 0xff;
+                int red   = 255 - ((color >> 16) & 0xff);
+                int green = 255 - ((color >> 8) & 0xff);
+                int blue  = 255 - (color & 0xff);
+
+                int invertedColor = (alpha << 24) | (red << 16) | (green << 8) | blue;
+                result.setRGB(x, y, invertedColor);
             }
         }
 

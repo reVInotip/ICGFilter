@@ -4,7 +4,6 @@ import org.example.model.events.FiltrationCompletedEvent;
 import org.example.model.filters.Filter;
 import org.example.model.filters.FilterPrototype;
 import org.example.model.filters.filterModels.ModelPrototype;
-import org.example.model.filters.filterModels.customTypes.Matrix;
 
 import java.awt.image.BufferedImage;
 
@@ -16,14 +15,13 @@ public class GaussianBlur extends FilterPrototype {
     }
 
     @Override
-    public void convert(BufferedImage image) {
+    public void convert(BufferedImage image, BufferedImage result) {
         if (image == null) {
             throw new IllegalArgumentException("Image cannot be null");
         }
 
         int width = image.getWidth();
         int height = image.getHeight();
-        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -65,6 +63,6 @@ public class GaussianBlur extends FilterPrototype {
         sumR = Math.min(Math.max(sumR, 0), 255);
         sumG = Math.min(Math.max(sumG, 0), 255);
         sumB = Math.min(Math.max(sumB, 0), 255);
-        return sumR << 16 | sumG << 8 | sumB;
+        return 255 << 24 | sumR << 16 | sumG << 8 | sumB;
     }
 }

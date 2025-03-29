@@ -47,13 +47,8 @@ public class ModelTasksManager {
         } else if (currTask instanceof SaveTask saveTask) {
             imageWorker.save(saveTask.imagePath, saveTask.imageName);
         } else if (currTask instanceof ApplyTask applyTask) {
-            BufferedImage currentImage = imageWorker.getLoadedImage();
-            filters.get(applyTask.filterName).convert(currentImage);
+            filters.get(applyTask.filterName).convert(imageWorker.getLoadedImage(), imageWorker.getFilteredImage());
         }
-    }
-
-    public static void setNewImage(BufferedImage currentImage){
-        imageWorker.setImage(currentImage);
     }
 
 }

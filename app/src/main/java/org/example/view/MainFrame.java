@@ -10,6 +10,7 @@ import org.example.model.filters.filterModels.ModelPrototype;
 import org.example.model.tasks.ApplyTask;
 import org.example.model.tasks.LoadTask;
 import org.example.model.tasks.SaveTask;
+import org.example.view.components.CursorManager;
 import org.example.view.components.Frame;
 
 import java.awt.*;
@@ -87,6 +88,7 @@ public class MainFrame extends Frame implements Observer {
         };
 
         ActionListener applyListener = action -> {
+            CursorManager.showWaitCursor();
             ModelTasksManager.addTask(new ApplyTask(MainModel.getSelectedFilter()));
         };
 

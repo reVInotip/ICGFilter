@@ -53,10 +53,13 @@ public class Frame extends JFrame {
 
         setJMenuBar(menuBar);
 
+        //привязка управления курсором
+        CursorManager.setTarget(this.getRootPane());
+
         JScrollPane scrollPaneToToolBar = new JScrollPane(toolBar);
         scrollPaneToToolBar.setPreferredSize(
                 new Dimension(
-                        100, //не очень важно т.к. она измен
+                        100, //не очень важно т.к. она изменяется атоматически
                         50
                 )
         );

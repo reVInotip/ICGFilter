@@ -14,14 +14,13 @@ public class FloydSteinbergDithering extends FilterPrototype {
     }
 
     @Override
-    public void convert(BufferedImage image) {
+    public void convert(BufferedImage image, BufferedImage outputImage) {
         if (image == null) {
             throw new IllegalArgumentException("Image cannot be null");
         }
 
         int width = image.getWidth();
         int height = image.getHeight();
-        BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         // Создаем копию изображения для работы
         BufferedImage workImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
