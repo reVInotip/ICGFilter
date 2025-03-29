@@ -53,8 +53,17 @@ public class Frame extends JFrame {
 
         setJMenuBar(menuBar);
 
-        toolBar.addSeparator();
-        add(toolBar, BorderLayout.NORTH);
+        //привязка управления курсором
+        CursorManager.setTarget(this.getRootPane());
+
+        JScrollPane scrollPaneToToolBar = new JScrollPane(toolBar);
+        scrollPaneToToolBar.setPreferredSize(
+                new Dimension(
+                        100, //не очень важно т.к. она изменяется атоматически
+                        50
+                )
+        );
+        add(scrollPaneToToolBar, BorderLayout.NORTH);
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);

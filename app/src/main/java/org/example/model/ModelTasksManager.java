@@ -6,7 +6,6 @@ import org.example.model.tasks.LoadTask;
 import org.example.model.tasks.SaveTask;
 import org.example.model.tasks.Task;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,13 +46,8 @@ public class ModelTasksManager {
         } else if (currTask instanceof SaveTask saveTask) {
             imageWorker.save(saveTask.imagePath, saveTask.imageName);
         } else if (currTask instanceof ApplyTask applyTask) {
-            BufferedImage currentImage = imageWorker.getLoadedImage();
-            filters.get(applyTask.filterName).convert(currentImage);
+            filters.get(applyTask.filterName).convert(imageWorker.getLoadedImage(), imageWorker.getFilteredImage());
         }
-    }
-
-    public static void setNewImage(BufferedImage currentImage){
-        imageWorker.setImage(currentImage);
     }
 
 }

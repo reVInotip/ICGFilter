@@ -2,6 +2,7 @@ package org.example.controller;
 
 import dto.FilterDto;
 import org.example.controller.component.ComponentUpdate;
+import org.example.controller.component.PanelMouseAdapter;
 import org.example.model.MainModel;
 
 import java.util.HashMap;
@@ -17,6 +18,8 @@ public class ICGFilter {
     public void start() {
         ComponentUpdate componentUpdate = new ComponentUpdate(model);
 
-        model.start(componentUpdate);
+        PanelMouseAdapter panelMouseAdapter = new PanelMouseAdapter(model);
+
+        model.start(componentUpdate, panelMouseAdapter);
     }
 }

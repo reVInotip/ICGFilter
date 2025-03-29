@@ -34,13 +34,11 @@ public class OrderedDither extends FilterPrototype {
         }
     }
 
-    public void convert(BufferedImage image) {
+    public void convert(BufferedImage image, BufferedImage result) {
 
         if (image == null) {
             throw new IllegalArgumentException("Image cannot be null");
         }
-
-        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
 
         int color, red, green, blue, alpha, x, y;
         for (int i = 0; i < image.getHeight(); ++i) {
@@ -52,10 +50,9 @@ public class OrderedDither extends FilterPrototype {
                 red = transform((color & 0xff0000) >> 16, x, y);
                 green = transform((color & 0xff00) >> 8, x, y);
                 blue = transform(color & 0xff, x, y);
-                alpha = transform((color & 0xff000000) >> 24, x, y);
 
                 color = 0;
-                color |= blue | (green << 8) | (red << 16) | (alpha << 24);
+                color |= blue | (green << 8) | (red << 16) | (255 << 24);
                 result.setRGB(j, i, color);
             }
         }

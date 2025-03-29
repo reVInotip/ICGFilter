@@ -15,10 +15,10 @@ public class Embossing extends FilterPrototype {
         super(filterModel);
     }
 
-    public void convert(BufferedImage image) {
+    @Override
+    public void convert(BufferedImage image, BufferedImage result) {
         int width = image.getWidth();
         int height = image.getHeight();
-        BufferedImage result = new BufferedImage(width, height, 2);
 
         for(int y = 1; y < height - 1; ++y) {
             for(int x = 1; x < width - 1; ++x) {
@@ -54,7 +54,7 @@ public class Embossing extends FilterPrototype {
         int Red = clamp(sumR + 128);
         int Green = clamp(sumG + 128);
         int Blue = clamp(sumB + 128);
-        return -16777216 | Red << 16 | Green << 8 | Blue;
+        return 255 << 24 | Red << 16 | Green << 8 | Blue;
     }
 
     private static int clamp(int value) {

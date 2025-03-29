@@ -21,7 +21,7 @@ public class SobelBorder {
         int color, red, green, blue;
         int rdx = 0, gdx = 0, bdx = 0;
         int rdy = 0, gdy = 0, bdy = 0;
-        int gradRed = 0, gradGreen = 0, gradBlue = 0;
+        int gradRed, gradGreen, gradBlue;
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
 

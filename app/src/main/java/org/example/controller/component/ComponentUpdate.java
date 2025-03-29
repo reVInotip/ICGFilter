@@ -16,4 +16,6 @@ public class ComponentUpdate extends ComponentAdapter {
     public void componentResized(ComponentEvent componentEvent) {
         model.stateChanged();
     }
+
+
 }
