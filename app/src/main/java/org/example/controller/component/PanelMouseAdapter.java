@@ -14,10 +14,6 @@ public class PanelMouseAdapter implements MouseListener, MouseMotionListener, Mo
     public PanelMouseAdapter(MainModel model){
         this.model = model;
     }
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
-    }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -36,6 +32,17 @@ public class PanelMouseAdapter implements MouseListener, MouseMotionListener, Mo
     }
 
     @Override
+    public void mouseDragged(MouseEvent e) {
+        if (e.getModifiersEx() != MouseEvent.BUTTON3_DOWN_MASK) {
+            return;
+        }
+
+        int deltaX = lastX - e.getX();
+        int deltaY = lastY - e.getY();
+        model.shiftPanel(deltaX, deltaY);
+    }
+
+    @Override
     public void mouseReleased(MouseEvent e) {
 
     }
@@ -46,19 +53,13 @@ public class PanelMouseAdapter implements MouseListener, MouseMotionListener, Mo
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {
+    public void mouseClicked(MouseEvent e) {
 
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-        if (e.getModifiersEx() != MouseEvent.BUTTON3_DOWN_MASK) {
-            return; // Если не правая кнопка, выходим из метода
-        }
+    public void mouseExited(MouseEvent e) {
 
-        int deltaX = lastX - e.getX();
-        int deltaY = lastY - e.getY();
-        model.shiftPanel(deltaX, deltaY);
     }
 
     @Override

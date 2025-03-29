@@ -11,9 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DialogPrototype extends JDialog {
-    private String name;
-    private ModelPrototype model;
-    private GridBagConstraints gbc;
+    private final ModelPrototype model;
+    private final GridBagConstraints gbc;
 
     private void addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
@@ -177,7 +176,6 @@ public class DialogPrototype extends JDialog {
 
     public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
         super(parent, "Окно настроек для инструмента: " + name, true);
-        this.name = name;
         this.model = model;
 
         JPanel paramsPanel = new JPanel(new GridBagLayout());

@@ -6,7 +6,6 @@ import org.example.model.tasks.LoadTask;
 import org.example.model.tasks.SaveTask;
 import org.example.model.tasks.Task;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

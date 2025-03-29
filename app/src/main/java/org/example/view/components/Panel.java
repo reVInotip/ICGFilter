@@ -8,12 +8,10 @@ import org.example.event.observers.Observer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 //public class Panel extends JPanel implements Observer, MouseListener, MouseMotionListener, MouseWheelListener {
 public class Panel extends JPanel implements Observer{
-    private RepaintEvent event;
     private Dimension panelSize; // Видимый размер изображения
     private BufferedImage img; // изображение
     private Dimension imSize = null;   // Реальный размер изображения
@@ -26,7 +24,6 @@ public class Panel extends JPanel implements Observer{
     public void update(Event event) {
         if (event instanceof RepaintEvent repaintEvent) {
             if (repaintEvent.image != null) {
-                this.event = repaintEvent;
                 this.img = repaintEvent.image;
 
                 imSize = new Dimension(img.getWidth(), img.getHeight());
@@ -42,10 +39,8 @@ public class Panel extends JPanel implements Observer{
                 return;
             }
 
-            int newPW = (int) (panelSize.width * resizeImgEvent.magnificationSize);
-
             // Обновление размеров панели
-            panelSize.width = newPW;
+            panelSize.width = (int) (panelSize.width * resizeImgEvent.magnificationSize);
             panelSize.height = (int) ((long) panelSize.width * imSize.height / imSize.width);
 
             setPreferredSize(panelSize);
