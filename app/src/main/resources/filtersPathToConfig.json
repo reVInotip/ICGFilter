@@ -4,7 +4,11 @@
 	{"name": "gamma", "path": "/configs/gammaConfig.json"},
 	{"name": "embossing", "path": "/configs/embossingConfig.json"},
 	{"name": "toBlackAndWhite", "path": "/configs/converterToBlackAndWhiteConfig.json"},
+	{"name": "affineTransform", "path": "/configs/affineTransform.json"},
+	{"name": "watercolorFilter", "path": "/configs/watercolorFilter.json"},
+	{"name": "sharpnessFilter", "path": "/configs/sharpnessFilter.json"},
 	{"name": "orderedDither", "path": "/configs/orderedDither.json"},
-	{"name": "gaussianBlur", "path": "/configs/gaussianBlur.json"}
+	{"name": "gaussianBlur", "path": "/configs/gaussianBlur.json"},
+	{"name": "floydSteinbergDitheringConfig", "path": "/configs/floydSteinbergDitheringConfig.json"}
 	]
 }

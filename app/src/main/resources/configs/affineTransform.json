@@ -1,0 +1,10 @@
+{
+	"filterPath": "org.example.model.filters.filters.AffineTransform",
+	"dialogWindowExist": true,
+	"filterParams": [{
+		"name": "angle",
+		"type": "int",
+		"max": 180,
+		"min": -180
+	}]
+}

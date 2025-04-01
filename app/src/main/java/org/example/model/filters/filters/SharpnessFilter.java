@@ -7,18 +7,20 @@ import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
 
-@Filter(descr = "Гауссово размытие", icon = "/utils/gaussian.png")
-public class GaussianBlur extends FilterPrototype {
-    public GaussianBlur(ModelPrototype filterModel) {
+@Filter(descr = "Фильтр резкости", icon = "/utils/sharpness.png")
+public class SharpnessFilter extends FilterPrototype {
+    private static final int[][] SHARPNESS_KERNEL = {
+            {0, -1, 0},
+            {-1, 5, -1},
+            {0, -1, 0}
+    };
+
+    public SharpnessFilter(ModelPrototype filterModel) {
         super(filterModel);
     }
 
     @Override
     public void convert(BufferedImage image, BufferedImage result) {
-        if (image == null) {
-            throw new IllegalArgumentException("Image cannot be null");
-        }
-
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -33,20 +35,12 @@ public class GaussianBlur extends FilterPrototype {
     }
 
     private int applyKernel(BufferedImage image, int x, int y) {
-
-        //int matrixLen = filterModel.getMatrix("kernel").getWidth();
-        int matrixLen = filterModel.getInteger("kernel");
-        int halfLen = matrixLen / 2;
-        int divider = matrixLen * matrixLen;
-
-        //createMatrix(matrixLen);
-
         int sumR = 0;
         int sumG = 0;
         int sumB = 0;
 
-        for (int ky = -halfLen; ky <= halfLen; ky++) {
-            for (int kx = -halfLen; kx <= halfLen; kx++) {
+        for (int ky = -1; ky <= 1; ky++) {
+            for (int kx = -1; kx <= 1; kx++) {
                 int nx = x + kx;
                 int ny = y + ky;
                 if (nx >= 0 && ny >= 0 && nx < image.getWidth() && ny < image.getHeight()) {
@@ -54,18 +48,22 @@ public class GaussianBlur extends FilterPrototype {
                     int r = pixel >> 16 & 255;
                     int g = pixel >> 8 & 255;
                     int b = pixel & 255;
-                    //int kernelValue = filterModel.getMatrix("kernel").get(kx + halfLen, ky + halfLen);
-                    int kernelValue = 1;
-                    sumR += (int) ((double) (r * kernelValue) / divider);
-                    sumG += (int) ((double) (g * kernelValue) / divider);
-                    sumB += (int) ((double) (b * kernelValue) / divider);
+                    int kernelValue = SHARPNESS_KERNEL[ky + 1][kx + 1];
+                    sumR += r * kernelValue;
+                    sumG += g * kernelValue;
+                    sumB += b * kernelValue;
                 }
             }
         }
 
-        sumR = Math.min(Math.max(sumR, 0), 255);
-        sumG = Math.min(Math.max(sumG, 0), 255);
-        sumB = Math.min(Math.max(sumB, 0), 255);
-        return 255 << 24 | sumR << 16 | sumG << 8 | sumB;
+        sumR = clamp(sumR, 0, 255);
+        sumG = clamp(sumG, 0, 255);
+        sumB = clamp(sumB, 0, 255);
+        int alpha = image.getRGB(x, y) >> 24 & 255;
+        return alpha << 24 | sumR << 16 | sumG << 8 | sumB;
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 }
