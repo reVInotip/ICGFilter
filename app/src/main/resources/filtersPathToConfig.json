@@ -11,6 +11,7 @@
 		{"name": "gaussianBlur", "path": "/configs/gaussianBlur.json"},
 		{"name": "floydSteinbergDitheringConfig", "path": "/configs/floydSteinbergDitheringConfig.json"},
 		{"name": "robertsBorder", "path": "/configs/robertsBorder.json"},
-		{"name": "sobelBorder", "path": "/configs/sobelBorder.json"}
+		{"name": "sobelBorder", "path": "/configs/sobelBorder.json"},
+		{"name": "expertFilter", "path": "/configs/expertFilter.json"}
 	]
 }

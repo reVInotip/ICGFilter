@@ -1,15 +1,16 @@
 package org.example.view.components.filterDialogs;
 
-import dto.FieldType;
 import dto.FilterParam;
 import org.example.model.filters.filterModels.ModelPrototype;
 import org.example.model.filters.filterModels.customTypes.Matrix;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DialogPrototype extends JDialog {
     private final ModelPrototype model;
@@ -171,12 +172,12 @@ public class DialogPrototype extends JDialog {
 
         matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5));
 
-        updateMatrixPanel(matrixPanel, matrix.getWidth(), paramName);
+        AtomicReference<ArrayList<JTextField>> fields = new AtomicReference<>(updateMatrixPanel(matrixPanel, matrix.getWidth(), paramName));
 
         sizeSpinner.addChangeListener(e -> {
             int newSize = (int) sizeSpinner.getValue();
             matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5));
-            updateMatrixPanel(matrixPanel, newSize, paramName);
+            fields.set(updateMatrixPanel(matrixPanel, newSize, paramName));
             panel.revalidate();
         });
 
@@ -186,23 +187,15 @@ public class DialogPrototype extends JDialog {
 
             for (int i = 0; i < newSize; i++) {
                 for (int j = 0; j < newSize; j++) {
-                    JTextField field = new JTextField(3);
-                    field.setHorizontalAlignment(JTextField.CENTER);
-                    field.setText(String.valueOf(model.getMatrix(paramName).get(j, i)));
+                    JTextField field = fields.get().get(i * newSize + j);
 
-                    final int finalX = j;
-                    final int finalY = i;
-                    field.addActionListener(e -> {
-                        try {
-                            int value = Integer.parseInt(field.getText());
-                            model.setMatrix(paramName, finalX, finalY, value);
-                        } catch (NumberFormatException ex) {
-                            JOptionPane.showMessageDialog(matrixPanel,
-                                    "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
-                        }
-                    });
-
-                    matrixPanel.add(field);
+                    try {
+                        int value = Integer.parseInt(field.getText());
+                        model.setMatrix(paramName, j, i, value);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(matrixPanel,
+                                "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
         });
@@ -226,9 +219,10 @@ public class DialogPrototype extends JDialog {
         return y + 1;
     }
 
-    private void updateMatrixPanel(JPanel matrixPanel, int size, String paramName) {
+    private ArrayList<JTextField> updateMatrixPanel(JPanel matrixPanel, int size, String paramName) {
         matrixPanel.removeAll();
 
+        ArrayList<JTextField> fields = new ArrayList<>();
         // Создаем текстовые поля для каждого элемента матрицы
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
@@ -236,8 +230,11 @@ public class DialogPrototype extends JDialog {
                 field.setHorizontalAlignment(JTextField.CENTER);
                 field.setText(String.valueOf(model.getMatrix(paramName).safetyGet(x, y)));
                 matrixPanel.add(field);
+                fields.add(field);
             }
         }
+
+        return fields;
     }
 
     private int addElement(JPanel panel, FilterParam element, int y) {
