@@ -3,11 +3,15 @@ package jsonParser.parsedConfigurationObjects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dto.FieldType;
 
+import java.util.List;
+
 public class DialogElement {
     private String name;
     private FieldType type;
-    private int max;
-    private int min;
+    private Integer max;
+    private Integer min;
+    @JsonProperty("size")
+    private List<Integer> size;
     private Integer step; //Integer, так как поле может отсутствовать
 
     // Геттеры и сеттеры
@@ -27,7 +31,7 @@ public class DialogElement {
         this.type = type;
     }
 
-    public int getMax() {
+    public Integer getMax() {
         return max;
     }
 
@@ -35,12 +39,20 @@ public class DialogElement {
         this.max = max;
     }
 
-    public int getMin() {
+    public Integer getMin() {
         return min;
     }
 
     public void setMin(int min) {
         this.min = min;
+    }
+
+    public List<Integer> getSize() {
+        return size;
+    }
+
+    public void setSize(List<Integer> size) {
+        this.size = size;
     }
 
     public Integer getStep() {

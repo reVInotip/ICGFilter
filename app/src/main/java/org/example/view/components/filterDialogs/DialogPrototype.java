@@ -9,26 +9,31 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class DialogPrototype extends JDialog {
     private final ModelPrototype model;
     private final GridBagConstraints gbc;
+    private final JButton apply;
 
-    private void addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
+    private int addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
         final JSlider elementSlider = new JSlider(JSlider.HORIZONTAL, min, max, min);
         final JLabel elementLabel = new JLabel(paramName);
 
         elementSlider.addChangeListener(changeEvent -> {
             int value = elementSlider.getValue();
-            model.setInteger(paramName, value);
             elementSpinner.setValue(value);
         });
 
         elementSpinner.addChangeListener(changeEvent -> {
             int value = Integer.parseInt(String.valueOf(elementSpinner.getValue()));
-            model.setInteger(paramName, value);
             elementSlider.setValue(value);
+        });
+
+        apply.addActionListener(actionEvent -> {
+            int value = elementSlider.getValue();
+            model.setInteger(paramName, value);
         });
 
         gbc.gridx = 0;
@@ -45,10 +50,11 @@ public class DialogPrototype extends JDialog {
         gbc.gridy = y + 1;
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(elementSlider, gbc);
+
+        return y + 1;
     }
 
-    private void addDoubleElement(JPanel panel, String paramName, double max, double min, int y) {
-
+    private int addDoubleElement(JPanel panel, String paramName, double max, double min, int y) {
         final JTextField textField = new JTextField(5);
         textField.setFont(new Font("Arial", Font.PLAIN, 14));
 
@@ -66,7 +72,6 @@ public class DialogPrototype extends JDialog {
             try {
                 double value = Double.parseDouble(textField.getText());
                 slider.setValue((int)(value * SCALE));
-                model.setDouble(paramName, value);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(panel,
                         "Введите корректное значение",
@@ -77,6 +82,10 @@ public class DialogPrototype extends JDialog {
         slider.addChangeListener(e -> {
             double value = slider.getValue() / (double)SCALE;
             textField.setText(String.valueOf(value));
+        });
+
+        apply.addActionListener(actionEvent -> {
+            double value = slider.getValue() / (double)SCALE;
             model.setDouble(paramName, value);
         });
 
@@ -94,29 +103,108 @@ public class DialogPrototype extends JDialog {
         gbc.gridy = y + 1;
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(slider, gbc);
+
+        return y + 1;
     }
 
-    private void addMatrixElement(JPanel panel, String paramName, int maxSize, int minSize, int y) {
+    private int addMatrixDataElement(JPanel panel, String paramName, List<Integer> sizes, int y) {
+        final JComboBox<Integer> sizeForRedChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
+        final JLabel labelForRedCh = new JLabel(paramName + " (красный канал)");
+
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(labelForRedCh, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(sizeForRedChannel, gbc);
+
+        final JComboBox<Integer> sizeForBlueChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
+        final JLabel labelForBlueCh = new JLabel(paramName + " (синий канал)");
+
+        gbc.gridx = 0;
+        gbc.gridy = y + 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(labelForBlueCh, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y + 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(sizeForBlueChannel, gbc);
+
+        final JComboBox<Integer> sizeForGreenChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
+        final JLabel labelForGreenCh = new JLabel(paramName + " (зелёный канал)");
+
+        gbc.gridx = 0;
+        gbc.gridy = y + 2;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(labelForGreenCh, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y + 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(sizeForGreenChannel, gbc);
+
+        apply.addActionListener(actionEvent -> {
+            int newSizeForGreen = Integer.parseInt(sizeForGreenChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSizeForGreen, "green");
+
+            int newSizeForBlue = Integer.parseInt(sizeForBlueChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSizeForBlue, "blue");
+
+            int newSizeForRed = Integer.parseInt(sizeForRedChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSizeForRed, "red");
+        });
+
+        return y + 2;
+    }
+
+    private int addMatrixElement(JPanel panel, String paramName, int maxSize, int minSize, int y) {
+        Matrix matrix = model.getMatrix(paramName);
 
         JLabel sizeLabel = new JLabel("Размер матрицы:");
-        JSpinner sizeSpinner = new JSpinner(new SpinnerNumberModel(minSize, minSize, maxSize, 1));
+        JSpinner sizeSpinner = new JSpinner(new SpinnerNumberModel(matrix.getWidth(), minSize, maxSize, 1));
 
         JPanel matrixPanel = new JPanel();
 
-        Matrix matrix = model.getMatrix(paramName);
+        matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5));
 
-        matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5)); // 3 колонки
-
-        updateMatrixPanel(matrixPanel, matrix, matrix.getWidth(), paramName);
-
-        updateMatrixPanel(matrixPanel, matrix, minSize, paramName);
+        updateMatrixPanel(matrixPanel, matrix.getWidth(), paramName);
 
         sizeSpinner.addChangeListener(e -> {
             int newSize = (int) sizeSpinner.getValue();
-            matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5)); // 3 колонки
-            Matrix newMatrix = new Matrix(minSize, minSize);
-            updateMatrixPanel(matrixPanel, newMatrix, newSize, paramName);
+            matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5));
+            updateMatrixPanel(matrixPanel, newSize, paramName);
             panel.revalidate();
+        });
+
+        apply.addActionListener(actionEvent -> {
+            int newSize = (int) sizeSpinner.getValue();
+            model.getMatrix(paramName).resize(newSize, newSize);
+
+            for (int i = 0; i < newSize; i++) {
+                for (int j = 0; j < newSize; j++) {
+                    JTextField field = new JTextField(3);
+                    field.setHorizontalAlignment(JTextField.CENTER);
+                    field.setText(String.valueOf(model.getMatrix(paramName).get(j, i)));
+
+                    final int finalX = j;
+                    final int finalY = i;
+                    field.addActionListener(e -> {
+                        try {
+                            int value = Integer.parseInt(field.getText());
+                            model.setMatrix(paramName, finalX, finalY, value);
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(matrixPanel,
+                                    "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+
+                    matrixPanel.add(field);
+                }
+            }
         });
 
         gbc.gridx = 0;
@@ -134,9 +222,11 @@ public class DialogPrototype extends JDialog {
         gbc.gridwidth = 2;
         panel.add(matrixPanel, gbc);
         gbc.gridwidth = 1;
+
+        return y + 1;
     }
 
-    private void updateMatrixPanel(JPanel matrixPanel, Matrix matrix, int size, String paramName) {
+    private void updateMatrixPanel(JPanel matrixPanel, int size, String paramName) {
         matrixPanel.removeAll();
 
         // Создаем текстовые поля для каждого элемента матрицы
@@ -144,39 +234,42 @@ public class DialogPrototype extends JDialog {
             for (int x = 0; x < size; x++) {
                 JTextField field = new JTextField(3);
                 field.setHorizontalAlignment(JTextField.CENTER);
-                field.setText(String.valueOf(matrix.get(x, y)));
-
-                final int finalX = x;
-                final int finalY = y;
-                field.addActionListener(e -> {
-                    try {
-                        int value = Integer.parseInt(field.getText());
-                        matrix.set(finalX, finalY, value);
-                        model.setMatrix(paramName, matrix);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(matrixPanel,
-                                "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
-                    }
-                });
-
+                field.setText(String.valueOf(model.getMatrix(paramName).safetyGet(x, y)));
                 matrixPanel.add(field);
             }
         }
     }
 
-    private void addElement(JPanel panel, FilterParam element, int y) {
-        if (element.type == FieldType.INTEGER) {
-            addSimpleElement(panel, element.name, element.max, element.min, element.step, y);
-        } else if (element.type == FieldType.DOUBLE){
-            addDoubleElement(panel, element.name, element.max, element.min, y);
-        } else if (element.type == FieldType.MATRIX) {
-            addMatrixElement(panel, element.name, element.max, element.min, y);
+    private int addElement(JPanel panel, FilterParam element, int y) {
+        if (element.isValid()) {
+            switch (element.type) {
+                case INTEGER -> {
+                    return addSimpleElement(panel, element.name, element.max, element.min, element.step, y);
+                }
+                case DOUBLE -> {
+                    return addDoubleElement(panel, element.name, element.max, element.min, y);
+                }
+                case MATRIX -> {
+                    return addMatrixElement(panel, element.name, element.max, element.min, y);
+                }
+                case MATRIX_DATA -> {
+                    return addMatrixDataElement(panel, element.name, element.size, y);
+                }
+            }
         }
+        return y;
     }
 
     public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
         super(parent, "Окно настроек для инструмента: " + name, true);
         this.model = model;
+        apply = new JButton("Apply");
+
+        apply.setBackground(Color.GREEN);
+
+        apply.addActionListener(actionEvent -> {
+            DialogPrototype.this.setVisible(false);
+        });
 
         JPanel paramsPanel = new JPanel(new GridBagLayout());
         gbc = new GridBagConstraints();
@@ -185,13 +278,14 @@ public class DialogPrototype extends JDialog {
 
         int y = 0;
         for (Map.Entry<String, FilterParam> dialogElement: dialogElements.entrySet()) {
-            addElement(paramsPanel, dialogElement.getValue(), y);
-            y += 2;
+            y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
         }
 
         paramsPanel.setPreferredSize(new Dimension(300, 300));
 
-        add(new JScrollPane(paramsPanel));
+        add(new JScrollPane(paramsPanel), BorderLayout.CENTER);
+        add(apply, BorderLayout.SOUTH);
+
         setMinimumSize(new Dimension(300, 300));
         setLocationRelativeTo(parent);
     }
