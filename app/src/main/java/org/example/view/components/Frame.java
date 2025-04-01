@@ -189,6 +189,8 @@ public class Frame extends JFrame {
                 ItemListener setVisibleListener = itemEvent -> {
                     if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
                         dialogWindows.get(tool).setVisible(true);
+                        menuButtonGroup.clearSelection();
+                        toolbarButtonGroup.clearSelection();
                     }
                 };
 

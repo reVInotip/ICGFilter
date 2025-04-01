@@ -2,9 +2,8 @@
 	"filterPath": "org.example.model.filters.filters.GaussianBlur",
 	"dialogWindowExist": true,
 	"filterParams": [{
-		"name": "kernel",
-		"type": "int",
-		"max": 5,
-		"min": 3
+		"name": "kernel size",
+		"type": "matrixData",
+		"size": [3, 5]
 	}]
 }
