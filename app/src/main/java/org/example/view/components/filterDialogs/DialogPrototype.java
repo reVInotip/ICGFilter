@@ -14,7 +14,6 @@ import java.util.List;
 public class DialogPrototype extends JDialog {
     private final ModelPrototype model;
     private final GridBagConstraints gbc;
-    private final JButton exit;
     private final JButton apply;
 
     private int addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
@@ -265,13 +264,8 @@ public class DialogPrototype extends JDialog {
         super(parent, "Окно настроек для инструмента: " + name, true);
         this.model = model;
         apply = new JButton("Apply");
-        exit = new JButton("Exit");
 
         apply.setBackground(Color.GREEN);
-
-        exit.addActionListener(actionEvent -> {
-            DialogPrototype.this.setVisible(false);
-        });
 
         apply.addActionListener(actionEvent -> {
             DialogPrototype.this.setVisible(false);
@@ -287,19 +281,11 @@ public class DialogPrototype extends JDialog {
             y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
         }
 
-        gbc.gridx = 0;
-        gbc.gridy = y;
-        gbc.anchor = GridBagConstraints.EAST;
-        paramsPanel.add(exit, gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = y;
-        gbc.anchor = GridBagConstraints.WEST;
-        paramsPanel.add(apply, gbc);
-
         paramsPanel.setPreferredSize(new Dimension(300, 300));
 
-        add(new JScrollPane(paramsPanel));
+        add(new JScrollPane(paramsPanel), BorderLayout.CENTER);
+        add(apply, BorderLayout.SOUTH);
+
         setMinimumSize(new Dimension(300, 300));
         setLocationRelativeTo(parent);
     }
