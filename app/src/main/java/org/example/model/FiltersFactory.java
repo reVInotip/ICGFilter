@@ -66,8 +66,7 @@ class FiltersFactory {
         FilterParam param;
         for (Map.Entry<String, FilterParam> filterParam: data.getFilterParams().entrySet()) {
             param = filterParam.getValue();
-            filterModel.addParameter(param.name, param.type,
-                    param.max, param.min, param.step);
+            filterModel.addParameter(param.name, param.type, param.getMinorParamsList());
         }
 
         return filterModel;

@@ -1,6 +1,7 @@
 package jsonParser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import dto.FilterDto;
 import dto.FilterParam;
 import jsonParser.parsedConfigurationObjects.DialogElement;
@@ -9,6 +10,7 @@ import org.example.App;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -54,6 +56,7 @@ public class Parser {
                                 dialogElement.getType(),
                                 dialogElement.getMax(),
                                 dialogElement.getMin(),
+                                dialogElement.getSize(),
                                 dialogElement.getStep()
                         ));
                     }

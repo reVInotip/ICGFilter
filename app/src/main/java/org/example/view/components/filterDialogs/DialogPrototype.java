@@ -9,12 +9,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class DialogPrototype extends JDialog {
     private final ModelPrototype model;
     private final GridBagConstraints gbc;
 
-    private void addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
+    private int addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
         final JSlider elementSlider = new JSlider(JSlider.HORIZONTAL, min, max, min);
         final JLabel elementLabel = new JLabel(paramName);
@@ -45,10 +46,11 @@ public class DialogPrototype extends JDialog {
         gbc.gridy = y + 1;
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(elementSlider, gbc);
+
+        return y + 1;
     }
 
-    private void addDoubleElement(JPanel panel, String paramName, double max, double min, int y) {
-
+    private int addDoubleElement(JPanel panel, String paramName, double max, double min, int y) {
         final JTextField textField = new JTextField(5);
         textField.setFont(new Font("Arial", Font.PLAIN, 14));
 
@@ -94,10 +96,69 @@ public class DialogPrototype extends JDialog {
         gbc.gridy = y + 1;
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(slider, gbc);
+
+        return y + 1;
     }
 
-    private void addMatrixElement(JPanel panel, String paramName, int maxSize, int minSize, int y) {
+    private int addMatrixDataElement(JPanel panel, String paramName, List<Integer> sizes, int y) {
+        final JComboBox<Integer> sizeForRedChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
+        final JLabel labelForRedCh = new JLabel(paramName + " (красный канал)");
 
+        sizeForRedChannel.addActionListener(actionListener -> {
+            int newSize = Integer.parseInt(sizeForRedChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSize, "red");
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(labelForRedCh, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(sizeForRedChannel, gbc);
+
+        final JComboBox<Integer> sizeForBlueChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
+        final JLabel labelForBlueCh = new JLabel(paramName + " (синий канал)");
+
+        sizeForBlueChannel.addActionListener(actionListener -> {
+            int newSize = Integer.parseInt(sizeForBlueChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSize, "blue");
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = y + 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(labelForBlueCh, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y + 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(sizeForBlueChannel, gbc);
+
+        final JComboBox<Integer> sizeForGreenChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
+        final JLabel labelForGreenCh = new JLabel(paramName + " (зелёный канал)");
+
+        sizeForGreenChannel.addActionListener(actionListener -> {
+            int newSize = Integer.parseInt(sizeForGreenChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSize, "green");
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = y + 2;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(labelForGreenCh, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y + 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(sizeForGreenChannel, gbc);
+
+        return y + 2;
+    }
+
+    private int addMatrixElement(JPanel panel, String paramName, int maxSize, int minSize, int y) {
         JLabel sizeLabel = new JLabel("Размер матрицы:");
         JSpinner sizeSpinner = new JSpinner(new SpinnerNumberModel(minSize, minSize, maxSize, 1));
 
@@ -134,6 +195,8 @@ public class DialogPrototype extends JDialog {
         gbc.gridwidth = 2;
         panel.add(matrixPanel, gbc);
         gbc.gridwidth = 1;
+
+        return y + 1;
     }
 
     private void updateMatrixPanel(JPanel matrixPanel, Matrix matrix, int size, String paramName) {
@@ -164,14 +227,24 @@ public class DialogPrototype extends JDialog {
         }
     }
 
-    private void addElement(JPanel panel, FilterParam element, int y) {
-        if (element.type == FieldType.INTEGER) {
-            addSimpleElement(panel, element.name, element.max, element.min, element.step, y);
-        } else if (element.type == FieldType.DOUBLE){
-            addDoubleElement(panel, element.name, element.max, element.min, y);
-        } else if (element.type == FieldType.MATRIX) {
-            addMatrixElement(panel, element.name, element.max, element.min, y);
+    private int addElement(JPanel panel, FilterParam element, int y) {
+        if (element.isValid()) {
+            switch (element.type) {
+                case INTEGER -> {
+                    return addSimpleElement(panel, element.name, element.max, element.min, element.step, y);
+                }
+                case DOUBLE -> {
+                    return addDoubleElement(panel, element.name, element.max, element.min, y);
+                }
+                case MATRIX -> {
+                    return addMatrixElement(panel, element.name, element.max, element.min, y);
+                }
+                case MATRIX_DATA -> {
+                    return addMatrixDataElement(panel, element.name, element.size, y);
+                }
+            }
         }
+        return y;
     }
 
     public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
@@ -185,8 +258,7 @@ public class DialogPrototype extends JDialog {
 
         int y = 0;
         for (Map.Entry<String, FilterParam> dialogElement: dialogElements.entrySet()) {
-            addElement(paramsPanel, dialogElement.getValue(), y);
-            y += 2;
+            y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
         }
 
         paramsPanel.setPreferredSize(new Dimension(300, 300));

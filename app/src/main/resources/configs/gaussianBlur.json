@@ -3,13 +3,7 @@
 	"dialogWindowExist": true,
 	"filterParams": [{
 		"name": "kernel",
-		"type": "matrix",
-		"max": 5,
-		"min": 3
-	},{
-		"name": "divider",
-		"type": "double",
-		"max": 10,
-		"min": 1
+		"type": "matrixData",
+		"size": [3, 5]
 	}]
 }

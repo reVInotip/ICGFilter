@@ -2,8 +2,11 @@ package org.example.model.filters.filterModels;
 
 import dto.FieldType;
 import org.example.model.filters.filterModels.customTypes.Matrix;
+import org.example.model.filters.filterModels.customTypes.MatrixData;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class ModelPrototype {
     private final HashMap<String, Parameter> parameters = new HashMap<>();
@@ -22,33 +25,63 @@ public class ModelPrototype {
         this.parameters.putAll(parameters);
     }
 
-    public void addParameter(String name, FieldType type, int max, int min, Integer step) {
-        Object data;
+    public void addParameter(String name, FieldType type, List<Object> minorParams) {
+        if (minorParams == null) {
+            throw new RuntimeException("Invalid parameter");
+        }
+
         switch (type) {
-            case INTEGER -> {
-                data = min;
-            }
-            case DOUBLE -> {
-                data = (double) min;
+            case INTEGER, DOUBLE -> {
+                parameters.put(name, new Parameter(
+                        type,
+                        minorParams.getFirst(),
+                        (int) minorParams.get(1),
+                        (int) minorParams.getFirst(),
+                        (Integer) minorParams.get(2)) //step mat be null
+                );
             }
             case MATRIX -> {
-                data = new Matrix(min, min);
+                var data = new Matrix((int) minorParams.getFirst(), (int) minorParams.getFirst());
+                parameters.put(name, new Parameter(
+                        type,
+                        data,
+                        (int) minorParams.get(1),
+                        (int) minorParams.getFirst(),
+                        (int) minorParams.get(2))
+                );
+            }
+            case MATRIX_DATA -> {
+                if (minorParams.getFirst() instanceof List<?> data) {
+                    int min = data.stream().mapToInt(x -> (int) x).min().orElseThrow(NoSuchElementException::new);
+                    int max = data.stream().mapToInt(x -> (int) x).max().orElseThrow(NoSuchElementException::new);
+
+                    var matrixData = new MatrixData(min, min, min, (List<Integer>) data);
+                    parameters.put(name, new Parameter(
+                            type,
+                            matrixData,
+                            max,
+                            min,
+                            null)
+                    );
+                }
             }
             default -> {
                 throw new RuntimeException("Invalid type");
             }
         }
-        parameters.put(name, new Parameter(type, data, max, min, step));
+
     }
 
     public void setInteger(String name, int value) {
-        if (value < parameters.get(name).min || value > parameters.get(name).max) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.INTEGER) ||
+                value < parameters.get(name).min || value > parameters.get(name).max) {
             throw new RuntimeException("Invalid parameter");
         }
 
         parameters.get(name).parameter = value;
     }
 
+    // TODO: rewrite
     public void setMatrix(String name, Matrix value) {
         parameters.get(name).parameter = value;
     }
@@ -81,12 +114,42 @@ public class ModelPrototype {
         }
     }
 
+    public MatrixData getMatrixData(String name) {
+        if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.MATRIX_DATA)
+                && parameters.get(name).parameter instanceof MatrixData) {
+            return (MatrixData) parameters.get(name).parameter;
+        }
+        else {
+            throw new RuntimeException("Invalid parameter");
+        }
+    }
+
+    public void setMatrixData(String name, int currSize, String channel) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.MATRIX_DATA)
+                || !(parameters.get(name).parameter instanceof MatrixData) ||
+                (currSize < parameters.get(name).min || currSize > parameters.get(name).max) ||
+                channel == null) {
+            throw new RuntimeException("Invalid parameter");
+        }
+
+        if (channel.equals("r") || channel.equals("red")) {
+            ((MatrixData) parameters.get(name).parameter).setCurrSizeForRedChannel(currSize);
+        } else if (channel.equals("g") || channel.equals("green")) {
+            ((MatrixData) parameters.get(name).parameter).setCurrSizeForGreenChannel(currSize);
+        } else if (channel.equals("b") || channel.equals("blue")) {
+            ((MatrixData) parameters.get(name).parameter).setCurrSizeForBlueChannel(currSize);
+        } else {
+            throw new RuntimeException("Invalid parameter");
+        }
+    }
+
     public String getName() {
         return name;
     }
 
     public void setDouble(String paramName, double value) {
-        if (value < (double)parameters.get(paramName).min || value > (double)parameters.get(paramName).max) {
+        if (!parameters.containsKey(paramName) || (parameters.get(paramName).type != FieldType.DOUBLE) ||
+                value < (double)parameters.get(paramName).min || value > (double)parameters.get(paramName).max) {
             throw new RuntimeException("Invalid parameter");
         }
         parameters.get(paramName).parameter = value;
