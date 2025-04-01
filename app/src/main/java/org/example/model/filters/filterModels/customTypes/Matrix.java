@@ -27,6 +27,10 @@ public class Matrix {
         return width;
     }
 
+    public int getHeight() {
+        return height;
+    }
+
     public int get(int x, int y) {
         if (x * width + y < width * height) {
             return data[x * width + y];
@@ -34,6 +38,15 @@ public class Matrix {
 
         throw new RuntimeException("Invalid index");
     }
+
+    public int safetyGet(int x, int y) {
+        if (x * width + y < width * height) {
+            return data[x * width + y];
+        }
+
+        return 0;
+    }
+
 
     public void resize(int newWidth, int newHeight) {
         data = Arrays.copyOf(data, newWidth * newHeight);

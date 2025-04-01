@@ -1,16 +1,4 @@
 {
 	"filterPath": "org.example.model.filters.filters.Inversion",
-	"dialogWindowExist": false,
-	"filterParams": [{
-		"name": "firstElement",
-		"type": "int",
-		"max": 100,
-		"min": 10,
-		"step": 5
-	},{
-		"name": "secondElement",
-		"type": "matrix",
-		"max": 5,
-		"min": 3
-	}]
+	"dialogWindowExist": false
 }

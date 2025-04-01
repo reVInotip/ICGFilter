@@ -14,6 +14,8 @@ import java.util.List;
 public class DialogPrototype extends JDialog {
     private final ModelPrototype model;
     private final GridBagConstraints gbc;
+    private final JButton exit;
+    private final JButton apply;
 
     private int addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
@@ -22,14 +24,17 @@ public class DialogPrototype extends JDialog {
 
         elementSlider.addChangeListener(changeEvent -> {
             int value = elementSlider.getValue();
-            model.setInteger(paramName, value);
             elementSpinner.setValue(value);
         });
 
         elementSpinner.addChangeListener(changeEvent -> {
             int value = Integer.parseInt(String.valueOf(elementSpinner.getValue()));
-            model.setInteger(paramName, value);
             elementSlider.setValue(value);
+        });
+
+        apply.addActionListener(actionEvent -> {
+            int value = elementSlider.getValue();
+            model.setInteger(paramName, value);
         });
 
         gbc.gridx = 0;
@@ -68,7 +73,6 @@ public class DialogPrototype extends JDialog {
             try {
                 double value = Double.parseDouble(textField.getText());
                 slider.setValue((int)(value * SCALE));
-                model.setDouble(paramName, value);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(panel,
                         "Введите корректное значение",
@@ -79,6 +83,10 @@ public class DialogPrototype extends JDialog {
         slider.addChangeListener(e -> {
             double value = slider.getValue() / (double)SCALE;
             textField.setText(String.valueOf(value));
+        });
+
+        apply.addActionListener(actionEvent -> {
+            double value = slider.getValue() / (double)SCALE;
             model.setDouble(paramName, value);
         });
 
@@ -104,11 +112,6 @@ public class DialogPrototype extends JDialog {
         final JComboBox<Integer> sizeForRedChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
         final JLabel labelForRedCh = new JLabel(paramName + " (красный канал)");
 
-        sizeForRedChannel.addActionListener(actionListener -> {
-            int newSize = Integer.parseInt(sizeForRedChannel.getSelectedItem().toString());
-            model.setMatrixData(paramName, newSize, "red");
-        });
-
         gbc.gridx = 0;
         gbc.gridy = y;
         gbc.anchor = GridBagConstraints.EAST;
@@ -121,11 +124,6 @@ public class DialogPrototype extends JDialog {
 
         final JComboBox<Integer> sizeForBlueChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
         final JLabel labelForBlueCh = new JLabel(paramName + " (синий канал)");
-
-        sizeForBlueChannel.addActionListener(actionListener -> {
-            int newSize = Integer.parseInt(sizeForBlueChannel.getSelectedItem().toString());
-            model.setMatrixData(paramName, newSize, "blue");
-        });
 
         gbc.gridx = 0;
         gbc.gridy = y + 1;
@@ -140,11 +138,6 @@ public class DialogPrototype extends JDialog {
         final JComboBox<Integer> sizeForGreenChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
         final JLabel labelForGreenCh = new JLabel(paramName + " (зелёный канал)");
 
-        sizeForGreenChannel.addActionListener(actionListener -> {
-            int newSize = Integer.parseInt(sizeForGreenChannel.getSelectedItem().toString());
-            model.setMatrixData(paramName, newSize, "green");
-        });
-
         gbc.gridx = 0;
         gbc.gridy = y + 2;
         gbc.anchor = GridBagConstraints.EAST;
@@ -154,6 +147,17 @@ public class DialogPrototype extends JDialog {
         gbc.gridy = y + 2;
         gbc.anchor = GridBagConstraints.WEST;
         panel.add(sizeForGreenChannel, gbc);
+
+        apply.addActionListener(actionEvent -> {
+            int newSizeForGreen = Integer.parseInt(sizeForGreenChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSizeForGreen, "green");
+
+            int newSizeForBlue = Integer.parseInt(sizeForBlueChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSizeForBlue, "blue");
+
+            int newSizeForRed = Integer.parseInt(sizeForRedChannel.getSelectedItem().toString());
+            model.setMatrixData(paramName, newSizeForRed, "red");
+        });
 
         return y + 2;
     }
@@ -166,16 +170,42 @@ public class DialogPrototype extends JDialog {
 
         JPanel matrixPanel = new JPanel();
 
-        matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5)); // 3 колонки
+        matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5));
 
         updateMatrixPanel(matrixPanel, matrix.getWidth(), paramName);
 
         sizeSpinner.addChangeListener(e -> {
             int newSize = (int) sizeSpinner.getValue();
-            matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5)); // 3 колонки
-            model.getMatrix(paramName).resize(newSize, newSize);
+            matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5));
             updateMatrixPanel(matrixPanel, newSize, paramName);
             panel.revalidate();
+        });
+
+        apply.addActionListener(actionEvent -> {
+            int newSize = (int) sizeSpinner.getValue();
+            model.getMatrix(paramName).resize(newSize, newSize);
+
+            for (int i = 0; i < newSize; i++) {
+                for (int j = 0; j < newSize; j++) {
+                    JTextField field = new JTextField(3);
+                    field.setHorizontalAlignment(JTextField.CENTER);
+                    field.setText(String.valueOf(model.getMatrix(paramName).get(j, i)));
+
+                    final int finalX = j;
+                    final int finalY = i;
+                    field.addActionListener(e -> {
+                        try {
+                            int value = Integer.parseInt(field.getText());
+                            model.setMatrix(paramName, finalX, finalY, value);
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(matrixPanel,
+                                    "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+
+                    matrixPanel.add(field);
+                }
+            }
         });
 
         gbc.gridx = 0;
@@ -205,20 +235,7 @@ public class DialogPrototype extends JDialog {
             for (int x = 0; x < size; x++) {
                 JTextField field = new JTextField(3);
                 field.setHorizontalAlignment(JTextField.CENTER);
-                field.setText(String.valueOf(model.getMatrix(paramName).get(x, y)));
-
-                final int finalX = x;
-                final int finalY = y;
-                field.addActionListener(e -> {
-                    try {
-                        int value = Integer.parseInt(field.getText());
-                        model.setMatrix(paramName, finalX, finalY, value);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(matrixPanel,
-                                "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
-                    }
-                });
-
+                field.setText(String.valueOf(model.getMatrix(paramName).safetyGet(x, y)));
                 matrixPanel.add(field);
             }
         }
@@ -247,10 +264,16 @@ public class DialogPrototype extends JDialog {
     public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
         super(parent, "Окно настроек для инструмента: " + name, true);
         this.model = model;
-        Button apply = new Button("Apply");
-        Button exit = new Button("Exit");
+        apply = new JButton("Apply");
+        exit = new JButton("Exit");
+
+        apply.setBackground(Color.GREEN);
 
         exit.addActionListener(actionEvent -> {
+            DialogPrototype.this.setVisible(false);
+        });
+
+        apply.addActionListener(actionEvent -> {
             DialogPrototype.this.setVisible(false);
         });
 
@@ -268,6 +291,11 @@ public class DialogPrototype extends JDialog {
         gbc.gridy = y;
         gbc.anchor = GridBagConstraints.EAST;
         paramsPanel.add(exit, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.WEST;
+        paramsPanel.add(apply, gbc);
 
         paramsPanel.setPreferredSize(new Dimension(300, 300));
 
