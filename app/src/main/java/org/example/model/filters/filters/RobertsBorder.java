@@ -64,7 +64,7 @@ public class RobertsBorder extends FilterPrototype {
                 green = gradGreen > binParam ? 255 : 0;
                 blue = gradBlue > binParam ? 255 : 0;
 
-                color = blue | (green << 8) | (red << 16);
+                color = blue | (green << 8) | (red << 16) | (255 << 24);
                 result.setRGB(j, i, color);
 
                 rdx = 0;

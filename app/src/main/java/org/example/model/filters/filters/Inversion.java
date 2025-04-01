@@ -15,8 +15,6 @@ public class Inversion extends FilterPrototype {
 
     @Override
     public void convert(BufferedImage image, BufferedImage result) {
-
-
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int color = image.getRGB(x, y);
