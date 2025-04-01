@@ -1,8 +1,11 @@
 package org.example.model.filters.filterModels.customTypes;
 
+import java.util.Arrays;
+
+// maybe we sho
 public class Matrix {
-    private final int width;
-    private final int height;
+    private int width;
+    private int height;
 
     private int[] data;
 
@@ -30,5 +33,11 @@ public class Matrix {
         }
 
         throw new RuntimeException("Invalid index");
+    }
+
+    public void resize(int newWidth, int newHeight) {
+        data = Arrays.copyOf(data, newWidth * newHeight);
+        width = newWidth;
+        height = newHeight;
     }
 }

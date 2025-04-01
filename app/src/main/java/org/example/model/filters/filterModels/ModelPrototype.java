@@ -47,7 +47,7 @@ public class ModelPrototype {
                         data,
                         (int) minorParams.get(1),
                         (int) minorParams.getFirst(),
-                        (int) minorParams.get(2))
+                        null)
                 );
             }
             case MATRIX_DATA -> {
@@ -81,9 +81,8 @@ public class ModelPrototype {
         parameters.get(name).parameter = value;
     }
 
-    // TODO: rewrite
-    public void setMatrix(String name, Matrix value) {
-        parameters.get(name).parameter = value;
+    public void setMatrix(String name, int x, int y, int value) {
+        ((Matrix) parameters.get(name).parameter).set(x, y, value);
     }
 
     public Integer getInteger(String name) {

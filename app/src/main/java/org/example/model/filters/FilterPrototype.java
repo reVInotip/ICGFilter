@@ -15,5 +15,4 @@ public abstract class FilterPrototype extends ModelObservable {
     public void convert(BufferedImage image, BufferedImage result) {
 
     }
-
 }

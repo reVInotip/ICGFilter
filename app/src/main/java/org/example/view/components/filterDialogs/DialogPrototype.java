@@ -159,24 +159,22 @@ public class DialogPrototype extends JDialog {
     }
 
     private int addMatrixElement(JPanel panel, String paramName, int maxSize, int minSize, int y) {
+        Matrix matrix = model.getMatrix(paramName);
+
         JLabel sizeLabel = new JLabel("Размер матрицы:");
-        JSpinner sizeSpinner = new JSpinner(new SpinnerNumberModel(minSize, minSize, maxSize, 1));
+        JSpinner sizeSpinner = new JSpinner(new SpinnerNumberModel(matrix.getWidth(), minSize, maxSize, 1));
 
         JPanel matrixPanel = new JPanel();
 
-        Matrix matrix = model.getMatrix(paramName);
-
         matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5)); // 3 колонки
 
-        updateMatrixPanel(matrixPanel, matrix, matrix.getWidth(), paramName);
-
-        updateMatrixPanel(matrixPanel, matrix, minSize, paramName);
+        updateMatrixPanel(matrixPanel, matrix.getWidth(), paramName);
 
         sizeSpinner.addChangeListener(e -> {
             int newSize = (int) sizeSpinner.getValue();
             matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5)); // 3 колонки
-            Matrix newMatrix = new Matrix(minSize, minSize);
-            updateMatrixPanel(matrixPanel, newMatrix, newSize, paramName);
+            model.getMatrix(paramName).resize(newSize, newSize);
+            updateMatrixPanel(matrixPanel, newSize, paramName);
             panel.revalidate();
         });
 
@@ -199,7 +197,7 @@ public class DialogPrototype extends JDialog {
         return y + 1;
     }
 
-    private void updateMatrixPanel(JPanel matrixPanel, Matrix matrix, int size, String paramName) {
+    private void updateMatrixPanel(JPanel matrixPanel, int size, String paramName) {
         matrixPanel.removeAll();
 
         // Создаем текстовые поля для каждого элемента матрицы
@@ -207,15 +205,14 @@ public class DialogPrototype extends JDialog {
             for (int x = 0; x < size; x++) {
                 JTextField field = new JTextField(3);
                 field.setHorizontalAlignment(JTextField.CENTER);
-                field.setText(String.valueOf(matrix.get(x, y)));
+                field.setText(String.valueOf(model.getMatrix(paramName).get(x, y)));
 
                 final int finalX = x;
                 final int finalY = y;
                 field.addActionListener(e -> {
                     try {
                         int value = Integer.parseInt(field.getText());
-                        matrix.set(finalX, finalY, value);
-                        model.setMatrix(paramName, matrix);
+                        model.setMatrix(paramName, finalX, finalY, value);
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(matrixPanel,
                                 "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
@@ -250,6 +247,12 @@ public class DialogPrototype extends JDialog {
     public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
         super(parent, "Окно настроек для инструмента: " + name, true);
         this.model = model;
+        Button apply = new Button("Apply");
+        Button exit = new Button("Exit");
+
+        exit.addActionListener(actionEvent -> {
+            DialogPrototype.this.setVisible(false);
+        });
 
         JPanel paramsPanel = new JPanel(new GridBagLayout());
         gbc = new GridBagConstraints();
@@ -260,6 +263,11 @@ public class DialogPrototype extends JDialog {
         for (Map.Entry<String, FilterParam> dialogElement: dialogElements.entrySet()) {
             y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
         }
+
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.EAST;
+        paramsPanel.add(exit, gbc);
 
         paramsPanel.setPreferredSize(new Dimension(300, 300));
 
