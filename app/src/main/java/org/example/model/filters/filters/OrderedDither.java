@@ -4,8 +4,11 @@ import org.example.model.events.FiltrationCompletedEvent;
 import org.example.model.filters.Filter;
 import org.example.model.filters.FilterPrototype;
 import org.example.model.filters.filterModels.ModelPrototype;
+import org.example.model.filters.filters.types.Pair;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+
 @Filter(descr = "Дизеринг", icon = "")
 public class OrderedDither extends FilterPrototype {
     static final private int[] matrix = {
@@ -34,13 +37,54 @@ public class OrderedDither extends FilterPrototype {
         }
     }
 
-    public void convert(BufferedImage image, BufferedImage result) {
+    private ArrayList<Integer> createPalette(int quantizationNumber) {
+        int step = (int) Math.round(255.0 / quantizationNumber);
 
+        ArrayList<Integer> palette = new ArrayList<>();
+        for (int i = 0; i <= 255 - step; i += step) {
+            palette.add(i);
+        }
+
+        palette.add(255);
+
+        return palette;
+    }
+
+    private ArrayList<Pair<Integer, Integer>> createRanges(int quantizationNumber) {
+        int step = (int) Math.round(255.0 / quantizationNumber);
+
+        ArrayList<Pair<Integer, Integer>> ranges = new ArrayList<>();
+
+        ranges.add(new Pair<>(Integer.MIN_VALUE, 0));
+
+        int i = step;
+        for (; i <= 255 - step; i += step) {
+            ranges.add(new Pair<>(i, i + step));
+        }
+
+        ranges.add(new Pair<>(i + step, Integer.MAX_VALUE));
+
+        return ranges;
+    }
+
+    public void convert(BufferedImage image, BufferedImage result) {
         if (image == null) {
             throw new IllegalArgumentException("Image cannot be null");
         }
 
-        int color, red, green, blue, alpha, x, y;
+        int redQuantizationNumber = filterModel.getInteger("red quantization number");
+        int greenQuantizationNumber = filterModel.getInteger("green quantization number");
+        int blueQuantizationNumber = filterModel.getInteger("blue quantization number");
+
+        ArrayList<Integer> paletteForRed = createPalette(redQuantizationNumber);
+        ArrayList<Integer> paletteForGreen = createPalette(greenQuantizationNumber);
+        ArrayList<Integer> paletteForBlue = createPalette(blueQuantizationNumber);
+
+        ArrayList<Pair<Integer, Integer>> rangesForRed = createRanges(redQuantizationNumber);
+        ArrayList<Pair<Integer, Integer>> rangesForGreen = createRanges(greenQuantizationNumber);
+        ArrayList<Pair<Integer, Integer>> rangesForBlue = createRanges(blueQuantizationNumber);
+
+        int color, red, green, blue, x, y;
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
                 x = j % matrixWidth;

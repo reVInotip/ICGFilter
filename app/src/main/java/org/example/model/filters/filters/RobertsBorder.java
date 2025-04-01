@@ -1,21 +1,32 @@
 package org.example.model.filters.filters;
 
+import org.example.model.events.FiltrationCompletedEvent;
+import org.example.model.filters.Filter;
+import org.example.model.filters.FilterPrototype;
+import org.example.model.filters.filterModels.ModelPrototype;
+
 import java.awt.image.BufferedImage;
 
-public class RobertsBorder {
-    static final private int binParam = 50;
-
-    static final private int[] robertsX = {
+@Filter(descr = "Выделение границ (Робертс)", icon = "")
+public class RobertsBorder extends FilterPrototype {
+    final private int[] robertsX = {
             1, 0,
             0, -1
     };
 
-    static final private int[] robertsY = {
+    final private int[] robertsY = {
             0, 1,
             -1, 0
     };
 
-    static public void apply(BufferedImage image) {
+    public RobertsBorder(ModelPrototype filterModel) {
+        super(filterModel);
+    }
+
+    @Override
+    public void convert(BufferedImage image, BufferedImage result) {
+        int binParam = filterModel.getInteger("binParam");
+
         int color, red, green, blue;
         int rdx = 0, gdx = 0, bdx = 0;
         int rdy = 0, gdy = 0, bdy = 0;
@@ -54,7 +65,7 @@ public class RobertsBorder {
                 blue = gradBlue > binParam ? 255 : 0;
 
                 color = blue | (green << 8) | (red << 16);
-                image.setRGB(j, i, color);
+                result.setRGB(j, i, color);
 
                 rdx = 0;
                 bdx = 0;
@@ -65,5 +76,7 @@ public class RobertsBorder {
                 gdy = 0;
             }
         }
+
+        update(new FiltrationCompletedEvent(result));
     }
 }
