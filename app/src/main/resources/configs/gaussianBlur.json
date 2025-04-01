@@ -2,7 +2,7 @@
 	"filterPath": "org.example.model.filters.filters.GaussianBlur",
 	"dialogWindowExist": true,
 	"filterParams": [{
-		"name": "kernel",
+		"name": "kernel size",
 		"type": "matrixData",
 		"size": [3, 5]
 	}]
