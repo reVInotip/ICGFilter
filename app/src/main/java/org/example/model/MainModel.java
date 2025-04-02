@@ -2,10 +2,7 @@ package org.example.model;
 
 import dto.FilterDto;
 import org.example.controller.component.PanelMouseAdapter;
-import org.example.event.RepaintEvent;
-import org.example.event.ResizeImgEvent;
-import org.example.event.ShiftImgEvent;
-import org.example.event.StartEvent;
+import org.example.event.*;
 import org.example.event.observers.Observable;
 import org.example.event.observers.Observer;
 import org.example.model.events.FiltrationCompletedEvent;
@@ -110,5 +107,9 @@ public class MainModel extends Observable implements ModelObserver {
         if (event instanceof FiltrationCompletedEvent filtrationCompletedEvent){
             update(new RepaintEvent(filtrationCompletedEvent.image));
         }
+    }
+
+    public void imgToFullScreen(){
+        update(new FullScreenEvent());
     }
 }

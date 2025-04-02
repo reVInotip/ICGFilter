@@ -4,6 +4,7 @@ import org.example.model.filters.FilterPrototype;
 import org.example.model.tasks.ApplyTask;
 import org.example.model.tasks.LoadTask;
 import org.example.model.tasks.SaveTask;
+import org.example.model.tasks.FullScreenTask;
 import org.example.model.tasks.Task;
 
 import java.util.ArrayList;
@@ -22,7 +23,12 @@ public class ModelTasksManager {
         imageWorker = imageW;
     }
 
+    private static MainModel model;
+
     static void setFilters(HashMap<String, FilterPrototype> filters, MainModel model) {
+
+        ModelTasksManager.model = model;
+
         ModelTasksManager.filters = filters;
         for (Map.Entry<String, FilterPrototype> entry : filters.entrySet()) {
             FilterPrototype value = entry.getValue();
@@ -47,6 +53,8 @@ public class ModelTasksManager {
             imageWorker.save(saveTask.imagePath, saveTask.imageName);
         } else if (currTask instanceof ApplyTask applyTask) {
             filters.get(applyTask.filterName).convert(imageWorker.getLoadedImage(), imageWorker.getFilteredImage());
+        } else if (currTask instanceof FullScreenTask fullScreenTask) {
+            model.imgToFullScreen();
         }
     }
 

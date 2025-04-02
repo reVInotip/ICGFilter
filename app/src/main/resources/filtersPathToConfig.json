@@ -8,6 +8,7 @@
 		{"name": "watercolorFilter", "path": "/configs/watercolorFilter.json"},
 		{"name": "sharpnessFilter", "path": "/configs/sharpnessFilter.json"},
 		{"name": "orderedDither", "path": "/configs/orderedDither.json"},
+    {"name": "LightFilterConfig", "path": "/configs/LightFilterConfig.json"},
 		{"name": "gaussianBlur", "path": "/configs/gaussianBlur.json"},
 		{"name": "floydSteinbergDitheringConfig", "path": "/configs/floydSteinbergDitheringConfig.json"},
 		{"name": "robertsBorder", "path": "/configs/robertsBorder.json"},

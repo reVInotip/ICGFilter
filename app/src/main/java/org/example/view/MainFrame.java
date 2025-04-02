@@ -8,6 +8,7 @@ import org.example.model.MainModel;
 import org.example.model.ModelTasksManager;
 import org.example.model.filters.filterModels.ModelPrototype;
 import org.example.model.tasks.ApplyTask;
+import org.example.model.tasks.FullScreenTask;
 import org.example.model.tasks.LoadTask;
 import org.example.model.tasks.SaveTask;
 import org.example.view.components.CursorManager;
@@ -52,10 +53,17 @@ public class MainFrame extends Frame implements Observer {
         addToolbarSeparator();
     }
 
-    private void createToolbarButtons(ActionListener saveListener, ActionListener loadListener, ActionListener applyListener) {
+    private void fullScreenButton(ActionListener loadListener) {
+        addToolbarButton("fullScreen", "Открывает изображение", "/utils/fullScreen.png", loadListener);
+        addToolbarSeparator();
+    }
+
+    private void createToolbarButtons(ActionListener saveListener, ActionListener loadListener
+            , ActionListener applyListener, ActionListener fullScreenListener) {
         createSaveButton(saveListener);
         createLoadButton(loadListener);
         createApplyButton(applyListener);
+        fullScreenButton(fullScreenListener);
     }
 
     private MainFrame(HashMap<String, FilterDto> filterDtos, HashMap<String, ModelPrototype> filterModels) {
@@ -92,7 +100,11 @@ public class MainFrame extends Frame implements Observer {
             ModelTasksManager.addTask(new ApplyTask(MainModel.getSelectedFilter()));
         };
 
-        createToolbarButtons(saveListener, loadListener, applyListener);
+        ActionListener fullScreenListener = action -> {
+            ModelTasksManager.addTask(new FullScreenTask());
+        };
+
+        createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener);
     }
 
     public List<Observer> getInternalObservers() {
