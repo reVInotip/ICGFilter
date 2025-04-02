@@ -27,9 +27,7 @@ public class Panel extends JPanel implements Observer{
                 this.img = repaintEvent.image;
 
                 imSize = new Dimension(img.getWidth(), img.getHeight());
-                if (panelSize == null) {
-                    panelSize = new Dimension(imSize);
-                }
+                panelSize = new Dimension(imSize);
 
                 setPreferredSize(panelSize);
             }

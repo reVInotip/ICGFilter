@@ -14,7 +14,7 @@ public class GammaCorrection extends FilterPrototype {
     }
 
     @Override
-    public void convert(BufferedImage image, BufferedImage result){
+    public void convert(BufferedImage image, BufferedImage result) {
         int color, red, green, blue;
 
         Double gamma = filterModel.getDouble("gamma");

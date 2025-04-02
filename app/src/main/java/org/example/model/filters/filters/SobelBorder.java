@@ -1,23 +1,34 @@
 package org.example.model.filters.filters;
 
+import org.example.model.events.FiltrationCompletedEvent;
+import org.example.model.filters.Filter;
+import org.example.model.filters.FilterPrototype;
+import org.example.model.filters.filterModels.ModelPrototype;
+
 import java.awt.image.BufferedImage;
 
-public class SobelBorder {
-    static final private int binParam = 50;
-
-    static final private int[] sobelX = {
+@Filter(descr = "Выделение границ (Собель)", icon = "")
+public class SobelBorder extends FilterPrototype {
+    final private int[] sobelX = {
             -1, 0, 1,
             -2, 0, 2,
             -1, 0, 1
     };
 
-    static final private int[] sobelY = {
+    final private int[] sobelY = {
             -1, -2, -1,
             0, 0, 0,
             1, 2, 1
     };
 
-    static public void apply(BufferedImage image) {
+    public SobelBorder(ModelPrototype filterModel) {
+        super(filterModel);
+    }
+
+    @Override
+    public void convert(BufferedImage image, BufferedImage result) {
+        int binParam = filterModel.getInteger("binParam");
+
         int color, red, green, blue;
         int rdx = 0, gdx = 0, bdx = 0;
         int rdy = 0, gdy = 0, bdy = 0;
@@ -55,8 +66,8 @@ public class SobelBorder {
                 green = gradGreen > binParam ? 255 : 0;
                 blue = gradBlue > binParam ? 255 : 0;
 
-                color = blue | (green << 8) | (red << 16);
-                image.setRGB(j, i, color);
+                color = blue | (green << 8) | (red << 16) | (255 << 24);
+                result.setRGB(j, i, color);
 
                 rdx = 0;
                 bdx = 0;
@@ -67,6 +78,8 @@ public class SobelBorder {
                 gdy = 0;
             }
         }
+
+        update(new FiltrationCompletedEvent(result));
     }
 }
 
