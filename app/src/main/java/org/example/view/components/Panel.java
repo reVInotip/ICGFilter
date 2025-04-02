@@ -13,8 +13,7 @@ public class Panel extends JPanel implements Observer {
     private Dimension imSize = null;
     private Dimension previousImSize = null;
     private BufferedImage img;
-
-
+    private boolean isFullScreen = false;
 
     public Panel() {
         super();
@@ -44,6 +43,9 @@ public class Panel extends JPanel implements Observer {
             previousImSize = new Dimension(imSize);
             setPreferredSize(panelSize);
         }
+        if(isFullScreen){
+            toFullScreen();
+        }
         CursorManager.defaultCursor();
     }
 
@@ -52,8 +54,12 @@ public class Panel extends JPanel implements Observer {
             return;
         }
 
-        panelSize.width = (int) (panelSize.width * resizeImgEvent.magnificationSize);
-        panelSize.height = (int) ((long) panelSize.width * imSize.height / imSize.width);
+        if(isFullScreen){
+            toFullScreen();
+        }else {
+            panelSize.width = (int) (panelSize.width * resizeImgEvent.magnificationSize);
+            panelSize.height = (int) ((long) panelSize.width * imSize.height / imSize.width);
+        }
         setPreferredSize(panelSize);
     }
 
@@ -73,15 +79,26 @@ public class Panel extends JPanel implements Observer {
     }
 
     private void handleFullScreenEvent(FullScreenEvent fullScreenEvent) {
+        isFullScreen = !isFullScreen;
+        toFullScreen();
+    }
+
+    private void toFullScreen(){
         Container parent = getParent();
+
         if (parent instanceof JViewport) {
             Container scrollPane = parent.getParent();
             if (scrollPane instanceof JScrollPane) {
                 Dimension viewportSize = scrollPane.getSize();
 
-                // -4 т.к иначе появляются Scroll
-                panelSize.width = (int)(viewportSize.width - 4);
-                panelSize.height = (int)(viewportSize.height - 4);
+                double widthRatio = (double)viewportSize.width / imSize.width;
+                double heightRatio = (double)viewportSize.height / imSize.height;
+
+                double scale = Math.min(widthRatio, heightRatio);
+
+                panelSize.width = (int)(imSize.width * scale - 4);
+                panelSize.height = (int)(imSize.height * scale -4);
+
             }
         }
     }

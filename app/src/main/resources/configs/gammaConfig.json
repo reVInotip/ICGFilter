@@ -5,7 +5,7 @@
 		"name": "gamma",
 		"type": "double",
 		"max": 10,
-		"min": 1,
+		"min": 0.1,
 		"step": 5
 	}]
 }
