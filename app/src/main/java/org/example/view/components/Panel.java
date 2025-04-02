@@ -30,7 +30,6 @@ public class Panel extends JPanel implements Observer {
             case FullScreenEvent fullScreenEvent -> handleFullScreenEvent(fullScreenEvent);
             default -> {}
         }
-
         revalidate();
         repaint();
     }
@@ -39,11 +38,8 @@ public class Panel extends JPanel implements Observer {
         if (repaintEvent.image != null) {
             this.img = repaintEvent.image;
             imSize = new Dimension(img.getWidth(), img.getHeight());
-
-            if (panelSize == null || previousImSize.height != imSize.height
-                    || previousImSize.width != imSize.width) {
-                panelSize = new Dimension(imSize);
-            }
+          
+            panelSize = new Dimension(imSize);
 
             previousImSize = new Dimension(imSize);
             setPreferredSize(panelSize);
