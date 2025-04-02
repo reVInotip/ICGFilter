@@ -6,6 +6,7 @@ import org.example.model.filters.FilterPrototype;
 import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
+
 @Filter(descr = "поворот", icon = "/utils/rotation.png")
 public class AffineTransform extends FilterPrototype {
 
@@ -13,33 +14,55 @@ public class AffineTransform extends FilterPrototype {
         super(filterModel);
     }
 
+    public BufferedImage createResultImage(BufferedImage src) {
+
+        double angle = Math.toRadians(filterModel.getInteger("angle"));
+        double sin = Math.abs(Math.sin(angle));
+        double cos = Math.abs(Math.cos(angle));
+
+        int newWidth = (int) Math.round(src.getWidth() * cos + src.getHeight() * sin);
+        int newHeight = (int) Math.round(src.getWidth() * sin + src.getHeight() * cos);
+
+        return new BufferedImage(newWidth, newHeight, src.getType());
+    }
+
     public void convert(BufferedImage image, BufferedImage result) {
 
+        result = createResultImage(result);
+
+        // Заполняем белым цветом
         for (int y = 0; y < result.getHeight(); y++) {
             for (int x = 0; x < result.getWidth(); x++) {
                 result.setRGB(x, y, 0xFFFFFFFF);
             }
         }
 
-        double[][] matrix = new double[][]{{Math.cos(Math.toRadians(filterModel.getInteger("angle"))),
-                -Math.sin(Math.toRadians(filterModel.getInteger("angle")))},
-                {Math.sin(Math.toRadians(filterModel.getInteger("angle"))),
-                Math.cos(Math.toRadians(filterModel.getInteger("angle")))}};
+        double angle = Math.toRadians(filterModel.getInteger("angle"));
+        double[][] matrix = new double[][]{
+                {Math.cos(angle), -Math.sin(angle)},
+                {Math.sin(angle), Math.cos(angle)}
+        };
 
-        int width = image.getWidth();
-        int height = image.getHeight();
+        int srcWidth = image.getWidth();
+        int srcHeight = image.getHeight();
+        int resultWidth = result.getWidth();
+        int resultHeight = result.getHeight();
 
-        double centerX = (double)width / 2.0;
-        double centerY = (double)height / 2.0;
+        double srcCenterX = (double)srcWidth / 2.0;
+        double srcCenterY = (double)srcHeight / 2.0;
+        double resultCenterX = (double)resultWidth / 2.0;
+        double resultCenterY = (double)resultHeight / 2.0;
 
-        for(int y = 0; y < height; ++y) {
-            for(int x = 0; x < width; ++x) {
-                double xCentered = (double)x - centerX;
-                double yCentered = (double)y - centerY;
-                double xNew = matrix[0][0] * xCentered + matrix[0][1] * yCentered + centerX;
-                double yNew = matrix[1][0] * xCentered + matrix[1][1] * yCentered + centerY;
-                if (xNew >= 0.0 && xNew < (double)(width - 1) && yNew >= 0.0 && yNew < (double)(height - 1)) {
-                    int interpolatedColor = this.getInterpolatedPixel(image, xNew, yNew);
+        for (int y = 0; y < resultHeight; y++) {
+            for (int x = 0; x < resultWidth; x++) {
+                double xRel = x - resultCenterX;
+                double yRel = y - resultCenterY;
+
+                double srcX = xRel * Math.cos(angle) + yRel * Math.sin(angle) + srcCenterX;
+                double srcY = -xRel * Math.sin(angle) + yRel * Math.cos(angle) + srcCenterY;
+
+                if (srcX >= 0 && srcX < srcWidth - 1 && srcY >= 0 && srcY < srcHeight - 1) {
+                    int interpolatedColor = getInterpolatedPixel(image, srcX, srcY);
                     result.setRGB(x, y, interpolatedColor);
                 }
             }
@@ -58,9 +81,9 @@ public class AffineTransform extends FilterPrototype {
         int c21 = image.getRGB(x2, y1);
         int c12 = image.getRGB(x1, y2);
         int c22 = image.getRGB(x2, y2);
-        int c1 = this.interpolateColor(c11, c21, alphaX);
-        int c2 = this.interpolateColor(c12, c22, alphaX);
-        return this.interpolateColor(c1, c2, alphaY);
+        int c1 = interpolateColor(c11, c21, alphaX);
+        int c2 = interpolateColor(c12, c22, alphaX);
+        return interpolateColor(c1, c2, alphaY);
     }
 
     private int interpolateColor(int c1, int c2, double alpha) {

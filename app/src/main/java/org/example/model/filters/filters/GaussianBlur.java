@@ -9,23 +9,60 @@ import java.awt.image.BufferedImage;
 
 @Filter(descr = "Гауссово размытие", icon = "/utils/gaussian.png")
 public class GaussianBlur extends FilterPrototype {
-    private final int[] smallBlurMatrix = {
-           0, 1, 0,
-           1, 2, 1,
-           0, 1, 0
+    private final int[] kernel3x3 = {
+            0, 1, 0,
+            1, 2, 1,
+            0, 1, 0
     };
+    private final double divider3x3 = 6;
 
-    private final double smallDivider = 6;
-
-    private final int[] bigBlurMatrix = {
+    private final int[] kernel5x5 = {
             1, 2, 3, 2, 1,
             2, 4, 5, 4, 2,
             3, 5, 6, 5, 3,
             2, 4, 5, 4, 2,
             1, 2, 3, 2, 1
     };
+    private final double divider5x5 = 74;
 
-    private final double bigDivider = 74;
+    private final int[] kernel7x7 = {
+            0, 0, 1, 2, 1, 0, 0,
+            0, 2, 3, 5, 3, 2, 0,
+            1, 3, 6, 8, 6, 3, 1,
+            2, 5, 8, 10, 8, 5, 2,
+            1, 3, 6, 8, 6, 3, 1,
+            0, 2, 3, 5, 3, 2, 0,
+            0, 0, 1, 2, 1, 0, 0
+    };
+    private final double divider7x7 = 140;
+
+    private final int[] kernel9x9 = {
+            0, 0, 1, 1, 2, 1, 1, 0, 0,
+            0, 1, 2, 3, 4, 3, 2, 1, 0,
+            1, 2, 4, 6, 7, 6, 4, 2, 1,
+            1, 3, 6, 8, 10, 8, 6, 3, 1,
+            2, 4, 7, 10, 12, 10, 7, 4, 2,
+            1, 3, 6, 8, 10, 8, 6, 3, 1,
+            1, 2, 4, 6, 7, 6, 4, 2, 1,
+            0, 1, 2, 3, 4, 3, 2, 1, 0,
+            0, 0, 1, 1, 2, 1, 1, 0, 0
+    };
+    private final double divider9x9 = 252;
+
+    private final int[] kernel11x11 = {
+            0, 0, 0, 1, 1, 2, 1, 1, 0, 0, 0,
+            0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0,
+            0, 1, 2, 4, 5, 6, 5, 4, 2, 1, 0,
+            1, 2, 4, 6, 8, 9, 8, 6, 4, 2, 1,
+            1, 3, 5, 8, 10, 11, 10, 8, 5, 3, 1,
+            2, 4, 6, 9, 11, 12, 11, 9, 6, 4, 2,
+            1, 3, 5, 8, 10, 11, 10, 8, 5, 3, 1,
+            1, 2, 4, 6, 8, 9, 8, 6, 4, 2, 1,
+            0, 1, 2, 4, 5, 6, 5, 4, 2, 1, 0,
+            0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0,
+            0, 0, 0, 1, 1, 2, 1, 1, 0, 0, 0
+    };
+    private final double divider11x11 = 384;
 
     public GaussianBlur(ModelPrototype filterModel) {
         super(filterModel);
@@ -55,17 +92,17 @@ public class GaussianBlur extends FilterPrototype {
         int sizeForGreenChannel = filterModel.getMatrixData("kernel size").getCurrSizeForGreenChannel();
         int sizeForBlueChannel = filterModel.getMatrixData("kernel size").getCurrSizeForBlueChannel();
 
+        int[] kernelForRed = getKernel(sizeForRedChannel);
+        int[] kernelForGreen = getKernel(sizeForGreenChannel);
+        int[] kernelForBlue = getKernel(sizeForBlueChannel);
+
+        double dividerForRed = getDivider(sizeForRedChannel);
+        double dividerForGreen = getDivider(sizeForGreenChannel);
+        double dividerForBlue = getDivider(sizeForBlueChannel);
+
         int halfLenForRed = sizeForRedChannel / 2;
         int halfLenForGreen = sizeForGreenChannel / 2;
         int halfLenForBlue = sizeForBlueChannel / 2;
-
-        double dividerForRed = sizeForRedChannel == 3 ? smallDivider : bigDivider;
-        double dividerForGreen = sizeForGreenChannel == 3 ? smallDivider : bigDivider;
-        double dividerForBlue = sizeForBlueChannel == 3 ? smallDivider : bigDivider;
-
-        int[] redMatrix = sizeForRedChannel == 3 ? smallBlurMatrix : bigBlurMatrix;
-        int[] greenMatrix = sizeForGreenChannel == 3 ? smallBlurMatrix : bigBlurMatrix;
-        int[] blueMatrix = sizeForBlueChannel == 3 ? smallBlurMatrix : bigBlurMatrix;
 
         int sumR = 0;
         int sumG = 0;
@@ -78,7 +115,7 @@ public class GaussianBlur extends FilterPrototype {
                 if (nx >= 0 && ny >= 0 && nx < image.getWidth() && ny < image.getHeight()) {
                     int pixel = image.getRGB(nx, ny);
                     int r = pixel >> 16 & 255;
-                    int kernelValue = redMatrix[(ky + halfLenForRed) * sizeForRedChannel + (kx + halfLenForRed)];
+                    int kernelValue = kernelForRed[(ky + halfLenForRed) * sizeForRedChannel + (kx + halfLenForRed)];
                     sumR += (int) ((double) (r * kernelValue) / dividerForRed);
                 }
             }
@@ -91,7 +128,7 @@ public class GaussianBlur extends FilterPrototype {
                 if (nx >= 0 && ny >= 0 && nx < image.getWidth() && ny < image.getHeight()) {
                     int pixel = image.getRGB(nx, ny);
                     int g = pixel >> 8 & 255;
-                    int kernelValue = greenMatrix[(ky + halfLenForGreen) * sizeForGreenChannel + (kx + halfLenForGreen)];
+                    int kernelValue = kernelForGreen[(ky + halfLenForGreen) * sizeForGreenChannel + (kx + halfLenForGreen)];
                     sumG += (int) ((double) (g * kernelValue) / dividerForGreen);
                 }
             }
@@ -104,7 +141,7 @@ public class GaussianBlur extends FilterPrototype {
                 if (nx >= 0 && ny >= 0 && nx < image.getWidth() && ny < image.getHeight()) {
                     int pixel = image.getRGB(nx, ny);
                     int b = pixel & 255;
-                    int kernelValue = blueMatrix[(ky + halfLenForBlue) * sizeForBlueChannel + (kx + halfLenForBlue)];
+                    int kernelValue = kernelForBlue[(ky + halfLenForBlue) * sizeForBlueChannel + (kx + halfLenForBlue)];
                     sumB += (int) ((double) (b * kernelValue) / dividerForBlue);
                 }
             }
@@ -114,5 +151,27 @@ public class GaussianBlur extends FilterPrototype {
         sumG = Math.min(Math.max(sumG, 0), 255);
         sumB = Math.min(Math.max(sumB, 0), 255);
         return 255 << 24 | sumR << 16 | sumG << 8 | sumB;
+    }
+
+    private int[] getKernel(int size) {
+        switch (size) {
+            case 3: return kernel3x3;
+            case 5: return kernel5x5;
+            case 7: return kernel7x7;
+            case 9: return kernel9x9;
+            case 11: return kernel11x11;
+            default: throw new IllegalArgumentException("Unsupported kernel size: " + size);
+        }
+    }
+
+    private double getDivider(int size) {
+        switch (size) {
+            case 3: return divider3x3;
+            case 5: return divider5x5;
+            case 7: return divider7x7;
+            case 9: return divider9x9;
+            case 11: return divider11x11;
+            default: throw new IllegalArgumentException("Unsupported kernel size: " + size);
+        }
     }
 }

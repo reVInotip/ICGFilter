@@ -1,0 +1,20 @@
+{
+	"filterPath": "org.example.model.filters.filters.LightFilter",
+	"dialogWindowExist": true,
+	"filterParams": [{
+		"name": "centerX",
+		"type": "int",
+		"max": 1700,
+		"min": -500
+	},{
+		"name": "centerY",
+		"type": "int",
+		"max": 1700,
+		"min": -500
+	},{
+		"name": "radius",
+		"type": "int",
+		"max": 1700,
+		"min": 0
+	}]
+}

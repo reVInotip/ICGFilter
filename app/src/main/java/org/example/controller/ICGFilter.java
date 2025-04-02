@@ -20,6 +20,8 @@ public class ICGFilter {
 
         PanelMouseAdapter panelMouseAdapter = new PanelMouseAdapter(model);
 
+
+
         model.start(componentUpdate, panelMouseAdapter);
     }
 }

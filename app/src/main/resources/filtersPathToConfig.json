@@ -7,6 +7,7 @@
 	{"name": "affineTransform", "path": "/configs/affineTransform.json"},
 	{"name": "watercolorFilter", "path": "/configs/watercolorFilter.json"},
 	{"name": "sharpnessFilter", "path": "/configs/sharpnessFilter.json"},
+	{"name": "LightFilterConfig", "path": "/configs/LightFilterConfig.json"},
 	{"name": "orderedDither", "path": "/configs/orderedDither.json"},
 	{"name": "gaussianBlur", "path": "/configs/gaussianBlur.json"},
 	{"name": "floydSteinbergDitheringConfig", "path": "/configs/floydSteinbergDitheringConfig.json"}
