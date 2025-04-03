@@ -12,7 +12,6 @@ public class Panel extends JPanel implements Observer {
     private Dimension panelSize;
     private Dimension previousPanelSize;
     private Dimension imSize = null;
-    private Dimension previousImSize = null;
     private BufferedImage img;
     BufferedImage scaledImage;
     private boolean isFullScreen = false;
@@ -40,7 +39,6 @@ public class Panel extends JPanel implements Observer {
           
             panelSize = new Dimension(imSize);
 
-            previousImSize = new Dimension(imSize);
             setPreferredSize(panelSize);
         }
         if(isFullScreen){
