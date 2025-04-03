@@ -10,9 +10,11 @@ import java.awt.image.BufferedImage;
 
 public class Panel extends JPanel implements Observer {
     private Dimension panelSize;
+    private Dimension previousPanelSize;
     private Dimension imSize = null;
     private Dimension previousImSize = null;
     private BufferedImage img;
+    BufferedImage scaledImage;
     private boolean isFullScreen = false;
 
     public Panel() {
@@ -29,8 +31,6 @@ public class Panel extends JPanel implements Observer {
             case FullScreenEvent fullScreenEvent -> handleFullScreenEvent(fullScreenEvent);
             default -> {}
         }
-        revalidate();
-        repaint();
     }
 
     private void handleRepaintEvent(RepaintEvent repaintEvent) {
@@ -47,6 +47,9 @@ public class Panel extends JPanel implements Observer {
             toFullScreen();
         }
         CursorManager.defaultCursor();
+
+        revalidate();
+        repaint();
     }
 
     private void handleResizeEvent(ResizeImgEvent resizeImgEvent) {
@@ -60,27 +63,46 @@ public class Panel extends JPanel implements Observer {
             panelSize.width = (int) (panelSize.width * resizeImgEvent.magnificationSize);
             panelSize.height = (int) ((long) panelSize.width * imSize.height / imSize.width);
         }
+
         setPreferredSize(panelSize);
+
+        revalidate();
+        repaint();
     }
 
+    private JViewport viewport = null;
+
+    private final Point reusablePoint = new Point();
     private void handleShiftEvent(ShiftImgEvent shiftImgEvent) {
-        if (getParent() instanceof JViewport viewport) {
-            Point scroll = viewport.getViewPosition();
-            Dimension viewportSize = viewport.getSize();
 
-            int newScrollX = scroll.x + shiftImgEvent.deltaX;
-            int newScrollY = scroll.y + shiftImgEvent.deltaY;
-
-            if (newScrollX >= 0 && newScrollX <= panelSize.width - viewportSize.width &&
-                    newScrollY >= 0 && newScrollY <= panelSize.height - viewportSize.height) {
-                viewport.setViewPosition(new Point(newScrollX, newScrollY));
+        if (viewport == null) {
+            if (getParent() instanceof JViewport) {
+                viewport = (JViewport) getParent();
+            } else {
+                return;
             }
+        }
+
+        Point scroll = viewport.getViewPosition();
+        Dimension viewportSize = viewport.getSize();
+
+        int newScrollX = scroll.x + shiftImgEvent.deltaX;
+        int newScrollY = scroll.y + shiftImgEvent.deltaY;
+
+        if (newScrollX >= 0 && newScrollX <= panelSize.width - viewportSize.width &&
+                newScrollY >= 0 && newScrollY <= panelSize.height - viewportSize.height) {
+            reusablePoint.setLocation(newScrollX, newScrollY);
+            viewport.setViewPosition(reusablePoint);
         }
     }
 
     private void handleFullScreenEvent(FullScreenEvent fullScreenEvent) {
         isFullScreen = !isFullScreen;
+
         toFullScreen();
+
+        revalidate();
+        repaint();
     }
 
     private void toFullScreen(){
@@ -107,10 +129,22 @@ public class Panel extends JPanel implements Observer {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (img != null) {
-            if (panelSize.width == imSize.width && panelSize.height == imSize.height) {
+
+            if (previousPanelSize == null){
+                previousPanelSize = new Dimension(imSize);
+            }
+
+            if (panelSize.width == imSize.width && panelSize.height == imSize.height){
                 g.drawImage(img, 0, 0, this);
             } else {
-                drawInterpolatedImage(g);
+                if(panelSize.width == previousPanelSize.width ||
+                        panelSize.height == previousPanelSize.height) {
+                    g.drawImage(scaledImage, 0, 0, this);
+                }
+                else {
+                    drawInterpolatedImage(g);
+                    previousPanelSize = new Dimension(panelSize);
+                }
             }
 
             Graphics2D g2d = (Graphics2D) g.create();
@@ -124,7 +158,7 @@ public class Panel extends JPanel implements Observer {
     }
 
     private void drawInterpolatedImage(Graphics g) {
-        BufferedImage scaledImage = new BufferedImage(panelSize.width, panelSize.height, BufferedImage.TYPE_INT_ARGB);
+        scaledImage = new BufferedImage(panelSize.width, panelSize.height, BufferedImage.TYPE_INT_ARGB);
 
         double scaleX = (double)imSize.width / panelSize.width;
         double scaleY = (double)imSize.height / panelSize.height;
@@ -137,7 +171,6 @@ public class Panel extends JPanel implements Observer {
                 scaledImage.setRGB(x, y, pixel);
             }
         }
-
         g.drawImage(scaledImage, 0, 0, this);
     }
 
