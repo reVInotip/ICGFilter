@@ -6,63 +6,16 @@ import org.example.model.filters.FilterPrototype;
 import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Filter(descr = "Гауссово размытие", icon = "/utils/gaussian.png")
 public class GaussianBlur extends FilterPrototype {
-    private final int[] kernel3x3 = {
-            0, 1, 0,
-            1, 2, 1,
-            0, 1, 0
-    };
-    private final double divider3x3 = 6;
-
-    private final int[] kernel5x5 = {
-            1, 2, 3, 2, 1,
-            2, 4, 5, 4, 2,
-            3, 5, 6, 5, 3,
-            2, 4, 5, 4, 2,
-            1, 2, 3, 2, 1
-    };
-    private final double divider5x5 = 74;
-
-    private final int[] kernel7x7 = {
-            0, 0, 1, 2, 1, 0, 0,
-            0, 2, 3, 5, 3, 2, 0,
-            1, 3, 6, 8, 6, 3, 1,
-            2, 5, 8, 10, 8, 5, 2,
-            1, 3, 6, 8, 6, 3, 1,
-            0, 2, 3, 5, 3, 2, 0,
-            0, 0, 1, 2, 1, 0, 0
-    };
-    private final double divider7x7 = 140;
-
-    private final int[] kernel9x9 = {
-            0, 0, 1, 1, 2, 1, 1, 0, 0,
-            0, 1, 2, 3, 4, 3, 2, 1, 0,
-            1, 2, 4, 6, 7, 6, 4, 2, 1,
-            1, 3, 6, 8, 10, 8, 6, 3, 1,
-            2, 4, 7, 10, 12, 10, 7, 4, 2,
-            1, 3, 6, 8, 10, 8, 6, 3, 1,
-            1, 2, 4, 6, 7, 6, 4, 2, 1,
-            0, 1, 2, 3, 4, 3, 2, 1, 0,
-            0, 0, 1, 1, 2, 1, 1, 0, 0
-    };
-    private final double divider9x9 = 252;
-
-    private final int[] kernel11x11 = {
-            0, 0, 0, 1, 1, 2, 1, 1, 0, 0, 0,
-            0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0,
-            0, 1, 2, 4, 5, 6, 5, 4, 2, 1, 0,
-            1, 2, 4, 6, 8, 9, 8, 6, 4, 2, 1,
-            1, 3, 5, 8, 10, 11, 10, 8, 5, 3, 1,
-            2, 4, 6, 9, 11, 12, 11, 9, 6, 4, 2,
-            1, 3, 5, 8, 10, 11, 10, 8, 5, 3, 1,
-            1, 2, 4, 6, 8, 9, 8, 6, 4, 2, 1,
-            0, 1, 2, 4, 5, 6, 5, 4, 2, 1, 0,
-            0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0,
-            0, 0, 0, 1, 1, 2, 1, 1, 0, 0, 0
-    };
-    private final double divider11x11 = 384;
+    private final Map<Integer, double[]> kernelCache = new HashMap<>();
+    private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
     public GaussianBlur(ModelPrototype filterModel) {
         super(filterModel);
@@ -74,104 +27,93 @@ public class GaussianBlur extends FilterPrototype {
             throw new IllegalArgumentException("Image cannot be null");
         }
 
-        int width = image.getWidth();
-        int height = image.getHeight();
+        int sizeR = filterModel.getMatrixData("kernel size").getCurrSizeForRedChannel();
+        int sizeG = filterModel.getMatrixData("kernel size").getCurrSizeForGreenChannel();
+        int sizeB = filterModel.getMatrixData("kernel size").getCurrSizeForBlueChannel();
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int newColor = applyKernel(image, x, y);
-                result.setRGB(x, y, newColor);
+        double[] kernelR = getCachedKernel(sizeR);
+        double[] kernelG = getCachedKernel(sizeG);
+        double[] kernelB = getCachedKernel(sizeB);
+
+        int[][] redChannel = new int[image.getWidth()][image.getHeight()];
+        int[][] greenChannel = new int[image.getWidth()][image.getHeight()];
+        int[][] blueChannel = new int[image.getWidth()][image.getHeight()];
+
+        executor.execute(() -> processChannel(image, redChannel, kernelR, sizeR, 16));
+        executor.execute(() -> processChannel(image, greenChannel, kernelG, sizeG, 8));
+        executor.execute(() -> processChannel(image, blueChannel, kernelB, sizeB, 0));
+
+        try {
+            executor.shutdown();
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int r = Math.min(Math.max(redChannel[x][y], 0), 255);
+                int g = Math.min(Math.max(greenChannel[x][y], 0), 255);
+                int b = Math.min(Math.max(blueChannel[x][y], 0), 255);
+                result.setRGB(x, y, (0xFF << 24) | (r << 16) | (g << 8) | b);
             }
         }
 
         update(new FiltrationCompletedEvent(result));
     }
 
-    private int applyKernel(BufferedImage image, int x, int y) {
-        int sizeForRedChannel = filterModel.getMatrixData("kernel size").getCurrSizeForRedChannel();
-        int sizeForGreenChannel = filterModel.getMatrixData("kernel size").getCurrSizeForGreenChannel();
-        int sizeForBlueChannel = filterModel.getMatrixData("kernel size").getCurrSizeForBlueChannel();
+    private void processChannel(BufferedImage image, int[][] channel, double[] kernel, int size, int shift) {
+        int radius = size / 2;
 
-        int[] kernelForRed = getKernel(sizeForRedChannel);
-        int[] kernelForGreen = getKernel(sizeForGreenChannel);
-        int[] kernelForBlue = getKernel(sizeForBlueChannel);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                double sum = 0;
 
-        double dividerForRed = getDivider(sizeForRedChannel);
-        double dividerForGreen = getDivider(sizeForGreenChannel);
-        double dividerForBlue = getDivider(sizeForBlueChannel);
+                for (int ky = -radius; ky <= radius; ky++) {
+                    for (int kx = -radius; kx <= radius; kx++) {
+                        int nx = x + kx;
+                        int ny = y + ky;
 
-        int halfLenForRed = sizeForRedChannel / 2;
-        int halfLenForGreen = sizeForGreenChannel / 2;
-        int halfLenForBlue = sizeForBlueChannel / 2;
+                        if (nx < 0) nx = 0;
+                        if (ny < 0) ny = 0;
+                        if (nx >= image.getWidth()) nx = image.getWidth() - 1;
+                        if (ny >= image.getHeight()) ny = image.getHeight() - 1;
 
-        int sumR = 0;
-        int sumG = 0;
-        int sumB = 0;
-
-        for (int ky = -halfLenForRed; ky <= halfLenForRed; ky++) {
-            for (int kx = -halfLenForRed; kx <= halfLenForRed; kx++) {
-                int nx = x + kx;
-                int ny = y + ky;
-                if (nx >= 0 && ny >= 0 && nx < image.getWidth() && ny < image.getHeight()) {
-                    int pixel = image.getRGB(nx, ny);
-                    int r = pixel >> 16 & 255;
-                    int kernelValue = kernelForRed[(ky + halfLenForRed) * sizeForRedChannel + (kx + halfLenForRed)];
-                    sumR += (int) ((double) (r * kernelValue) / dividerForRed);
+                        int pixel = image.getRGB(nx, ny);
+                        double weight = kernel[(ky + radius) * size + (kx + radius)];
+                        sum += ((pixel >> shift) & 0xFF) * weight;
+                    }
                 }
+                channel[x][y] = (int) Math.round(sum);
             }
-        }
-
-        for (int ky = -halfLenForGreen; ky <= halfLenForGreen; ky++) {
-            for (int kx = -halfLenForGreen; kx <= halfLenForGreen; kx++) {
-                int nx = x + kx;
-                int ny = y + ky;
-                if (nx >= 0 && ny >= 0 && nx < image.getWidth() && ny < image.getHeight()) {
-                    int pixel = image.getRGB(nx, ny);
-                    int g = pixel >> 8 & 255;
-                    int kernelValue = kernelForGreen[(ky + halfLenForGreen) * sizeForGreenChannel + (kx + halfLenForGreen)];
-                    sumG += (int) ((double) (g * kernelValue) / dividerForGreen);
-                }
-            }
-        }
-
-        for (int ky = -halfLenForBlue; ky <= halfLenForBlue; ky++) {
-            for (int kx = -halfLenForBlue; kx <= halfLenForBlue; kx++) {
-                int nx = x + kx;
-                int ny = y + ky;
-                if (nx >= 0 && ny >= 0 && nx < image.getWidth() && ny < image.getHeight()) {
-                    int pixel = image.getRGB(nx, ny);
-                    int b = pixel & 255;
-                    int kernelValue = kernelForBlue[(ky + halfLenForBlue) * sizeForBlueChannel + (kx + halfLenForBlue)];
-                    sumB += (int) ((double) (b * kernelValue) / dividerForBlue);
-                }
-            }
-        }
-
-        sumR = Math.min(Math.max(sumR, 0), 255);
-        sumG = Math.min(Math.max(sumG, 0), 255);
-        sumB = Math.min(Math.max(sumB, 0), 255);
-        return 255 << 24 | sumR << 16 | sumG << 8 | sumB;
-    }
-
-    private int[] getKernel(int size) {
-        switch (size) {
-            case 3: return kernel3x3;
-            case 5: return kernel5x5;
-            case 7: return kernel7x7;
-            case 9: return kernel9x9;
-            case 11: return kernel11x11;
-            default: throw new IllegalArgumentException("Unsupported kernel size: " + size);
         }
     }
 
-    private double getDivider(int size) {
-        switch (size) {
-            case 3: return divider3x3;
-            case 5: return divider5x5;
-            case 7: return divider7x7;
-            case 9: return divider9x9;
-            case 11: return divider11x11;
-            default: throw new IllegalArgumentException("Unsupported kernel size: " + size);
+    private double[] getCachedKernel(int size) {
+        if (!kernelCache.containsKey(size)) {
+            kernelCache.put(size, generateGaussianKernel(size));
         }
+        return kernelCache.get(size);
+    }
+
+    private double[] generateGaussianKernel(int size) {
+        double sigma = size / 3.0;
+        double[] kernel = new double[size * size];
+        double sum = 0.0;
+        int radius = size / 2;
+
+        for (int y = -radius; y <= radius; y++) {
+            for (int x = -radius; x <= radius; x++) {
+                double value = Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
+                kernel[(y + radius) * size + (x + radius)] = value;
+                sum += value;
+            }
+        }
+
+        for (int i = 0; i < kernel.length; i++) {
+            kernel[i] /= sum;
+        }
+
+        return kernel;
     }
 }

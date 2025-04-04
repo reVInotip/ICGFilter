@@ -1,4 +1,10 @@
 {
 	"filterPath": "org.example.model.filters.filters.FloydSteinbergDithering",
-	"dialogWindowExist": false
+	"dialogWindowExist": true,
+	"filterParams": [{
+		"name": "level",
+		"type": "int",
+		"max": 20,
+		"min": 2
+	}]
 }
