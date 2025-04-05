@@ -4,41 +4,83 @@ import org.example.model.events.FiltrationCompletedEvent;
 import org.example.model.filters.Filter;
 import org.example.model.filters.FilterPrototype;
 import org.example.model.filters.filterModels.ModelPrototype;
-import org.example.model.filters.filters.types.Pair;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Filter(descr = "Дизеринг", icon = "")
 public class OrderedDither extends FilterPrototype {
-    static final private int[] matrix = {
-            0, 32, 8, 40, 2, 34, 10, 42,
-            48, 16, 56, 24, 50, 18, 58, 26,
-            12, 44, 4, 36, 14, 46, 6, 38,
-            60, 28, 52, 20, 62, 30, 54, 22,
-            3, 35, 11, 43, 1, 33, 9, 41,
-            51, 19, 59, 27, 49, 17, 57, 25,
-            15, 47, 7, 39, 13, 45, 5, 37,
-            63, 31, 55, 23, 61, 29, 53, 21
-    };
-    static final private int normalizationK = 4;
-    static final private int matrixHeight = 8;
-    static final private int matrixWidth = 8;
+    final private List<Integer[]> matrices = new ArrayList<>();
+    final private List<Integer> sizes = new ArrayList<>();
 
     public OrderedDither(ModelPrototype filterModel) {
         super(filterModel);
+
+        matrices.add(new Integer[]{0});
+        sizes.add(1);
+
+        int baseSize = 2;
+        for (int i = 0; i < 4; ++i) {
+            Integer[] newMatrix = new Integer[baseSize * baseSize];
+            Integer[] prevMatrix = matrices.getLast();
+            int prY;
+
+            for (int y = 0; y < baseSize / 2; ++y) {
+                prY = y % (baseSize / 2);
+                for (int x = 0; x < baseSize / 2; ++x) {
+                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)];
+                }
+                for (int x = baseSize / 2; x < baseSize; ++x) {
+                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)] + 2;
+                }
+            }
+
+            for (int y = baseSize / 2; y < baseSize; ++y) {
+                prY = y % (baseSize / 2);
+                for (int x = 0; x < baseSize / 2; ++x) {
+                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)] + 3;
+                }
+                for (int x = baseSize / 2; x < baseSize; ++x) {
+                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)] + 1;
+                }
+            }
+
+            matrices.add(newMatrix);
+            sizes.add(baseSize);
+
+            baseSize *= 2;
+        }
     }
 
-    static private int transform(int intensity, int x, int y, ArrayList<Integer> palette, ArrayList<Pair<Integer, Integer>> ranges) {
-        double updatedIntensity = intensity + normalizationK * (matrix[y * matrixWidth + x] - 0.5);
+    private int transform(int intensity, int x, int y, ArrayList<Integer> palette, Integer[] matrix, int matrixSize) {
+        double matrixValue = ((double) matrix[y * matrixSize + x]) / (matrixSize * matrixSize);
+        double updatedIntensity = intensity + matrixValue * 256 - 128;
 
-        for (int i = 0; i < ranges.size(); ++i) {
-            if (updatedIntensity <= ranges.get(i).second && updatedIntensity > ranges.get(i).first) {
-                return palette.get(i);
+        int color = 0;
+        int distance = Integer.MAX_VALUE;
+
+        for (Integer integer : palette) {
+            if (Math.abs(integer - updatedIntensity) < distance) {
+                distance = (int) Math.abs(integer - updatedIntensity);
+                color = integer;
             }
         }
 
-        throw new RuntimeException("Can't determine color");
+        return color;
+    }
+
+    private int findSuitableMatrix(int quantizationNumber) {
+        if (quantizationNumber >= 2 && quantizationNumber < 30) {
+            return 4;
+        } else if (quantizationNumber >= 30 && quantizationNumber < 60) {
+            return 3;
+        } else if (quantizationNumber >= 60 && quantizationNumber < 90) {
+            return 2;
+        } else {
+            return 1;
+        }
     }
 
     private ArrayList<Integer> createPalette(int quantizationNumber) {
@@ -54,23 +96,6 @@ public class OrderedDither extends FilterPrototype {
         return palette;
     }
 
-    private ArrayList<Pair<Integer, Integer>> createRanges(int quantizationNumber) {
-        int step = (int) Math.round(255.0 / quantizationNumber);
-
-        ArrayList<Pair<Integer, Integer>> ranges = new ArrayList<>();
-
-        ranges.add(new Pair<>(Integer.MIN_VALUE, step));
-
-        int i = step;
-        for (; i <= 255 - step; i += step) {
-            ranges.add(new Pair<>(i, i + step));
-        }
-
-        ranges.add(new Pair<>(i, Integer.MAX_VALUE));
-
-        return ranges;
-    }
-
     public void convert(BufferedImage image, BufferedImage result) {
         if (image == null) {
             throw new IllegalArgumentException("Image cannot be null");
@@ -84,20 +109,34 @@ public class OrderedDither extends FilterPrototype {
         ArrayList<Integer> paletteForGreen = createPalette(greenQuantizationNumber);
         ArrayList<Integer> paletteForBlue = createPalette(blueQuantizationNumber);
 
-        ArrayList<Pair<Integer, Integer>> rangesForRed = createRanges(redQuantizationNumber);
-        ArrayList<Pair<Integer, Integer>> rangesForGreen = createRanges(greenQuantizationNumber);
-        ArrayList<Pair<Integer, Integer>> rangesForBlue = createRanges(blueQuantizationNumber);
+        int suitRedMatrixIndex = findSuitableMatrix(redQuantizationNumber);
+        int suitBlueMatrixIndex = findSuitableMatrix(blueQuantizationNumber);
+        int suitGreenMatrixIndex = findSuitableMatrix(greenQuantizationNumber);
+
+        Integer[] redMatrix = matrices.get(suitRedMatrixIndex);
+        Integer[] blueMatrix = matrices.get(suitBlueMatrixIndex);
+        Integer[] greenMatrix = matrices.get(suitGreenMatrixIndex);
+
+        int redMatrixSize = sizes.get(suitRedMatrixIndex);
+        int blueMatrixSize = sizes.get(suitBlueMatrixIndex);
+        int greenMatrixSize = sizes.get(suitGreenMatrixIndex);
 
         int color, red, green, blue, x, y;
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
-                x = j % matrixWidth;
-                y = i % matrixHeight;
-
                 color = image.getRGB(j, i);
-                red = transform((color & 0xff0000) >> 16, x, y, paletteForRed, rangesForRed);
-                green = transform((color & 0xff00) >> 8, x, y, paletteForGreen, rangesForGreen);
-                blue = transform(color & 0xff, x, y, paletteForBlue, rangesForBlue);
+
+                x = j % redMatrixSize;
+                y = i % redMatrixSize;
+                red = transform((color & 0xff0000) >> 16, x, y, paletteForRed, redMatrix, redMatrixSize);
+
+                x = j % greenMatrixSize;
+                y = i % greenMatrixSize;
+                green = transform((color & 0xff00) >> 8, x, y, paletteForGreen, greenMatrix, greenMatrixSize);
+
+                x = j % blueMatrixSize;
+                y = i % blueMatrixSize;
+                blue = transform(color & 0xff, x, y, paletteForBlue, blueMatrix, blueMatrixSize);
 
                 color = 0;
                 color |= blue | (green << 8) | (red << 16) | (255 << 24);
