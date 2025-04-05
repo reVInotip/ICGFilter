@@ -8,9 +8,10 @@
 		{"name": "watercolorFilter", "path": "/configs/watercolorFilter.json"},
 		{"name": "sharpnessFilter", "path": "/configs/sharpnessFilter.json"},
 		{"name": "orderedDither", "path": "/configs/orderedDither.json"},
-    {"name": "LightFilterConfig", "path": "/configs/LightFilterConfig.json"},
+    	{"name": "LightFilterConfig", "path": "/configs/LightFilterConfig.json"},
 		{"name": "gaussianBlur", "path": "/configs/gaussianBlur.json"},
 		{"name": "floydSteinbergDitheringConfig", "path": "/configs/floydSteinbergDitheringConfig.json"},
+		{"name": "floydSteinbergDitheringConfig2", "path": "/configs/floydSteinbergDitheringConfig2.json"},
 		{"name": "robertsBorder", "path": "/configs/robertsBorder.json"},
 		{"name": "sobelBorder", "path": "/configs/sobelBorder.json"},
 		{"name": "expertFilter", "path": "/configs/expertFilter.json"}

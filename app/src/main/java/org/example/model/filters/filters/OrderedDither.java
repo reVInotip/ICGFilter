@@ -121,7 +121,7 @@ public class OrderedDither extends FilterPrototype {
         int blueMatrixSize = sizes.get(suitBlueMatrixIndex);
         int greenMatrixSize = sizes.get(suitGreenMatrixIndex);
 
-        int color, red, green, blue, x, y;
+        int color, red, green, blue, alpha, x, y;
         for (int i = 0; i < image.getHeight(); ++i) {
             for (int j = 0; j < image.getWidth(); ++j) {
                 color = image.getRGB(j, i);
@@ -138,8 +138,10 @@ public class OrderedDither extends FilterPrototype {
                 y = i % blueMatrixSize;
                 blue = transform(color & 0xff, x, y, paletteForBlue, blueMatrix, blueMatrixSize);
 
+                alpha = (color & 0xff000000) >> 24;
+
                 color = 0;
-                color |= blue | (green << 8) | (red << 16) | (255 << 24);
+                color |= blue | (green << 8) | (red << 16) | (alpha << 24);
                 result.setRGB(j, i, color);
             }
         }
