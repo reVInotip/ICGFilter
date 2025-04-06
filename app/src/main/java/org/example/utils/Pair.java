@@ -1,4 +1,4 @@
-package org.example.model.filters.filters.types;
+package org.example.utils;
 
 public class Pair<A, B> {
     public A first;

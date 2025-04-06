@@ -2,6 +2,11 @@
   "filterPath": "org.example.model.filters.filters.ExpertFilter",
   "dialogWindowExist": true,
   "filterParams": [{
+    "name": "presets",
+    "type": "list",
+    "link": ["kernel", "divider"],
+    "elements": ["emboss", "sharpening", "laplacian sharpening", "box blur", "corner detector"]
+  },{
     "name": "kernel",
     "type": "matrix",
     "max": 100,
@@ -9,7 +14,7 @@
   },{
     "name": "divider",
     "type": "int",
-    "max": 700,
+    "max": 300,
     "min": 1,
     "step": 1
   }]

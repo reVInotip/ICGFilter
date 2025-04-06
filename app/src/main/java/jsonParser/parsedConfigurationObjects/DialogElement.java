@@ -13,6 +13,10 @@ public class DialogElement {
     @JsonProperty("size")
     private List<Integer> size;
     private Integer step; //Integer, так как поле может отсутствовать
+    @JsonProperty("elements")
+    private List<String> elements;
+    @JsonProperty("link")
+    private List<String> link;
 
     // Геттеры и сеттеры
     public String getName() {
@@ -72,5 +76,21 @@ public class DialogElement {
                 ", min=" + min +
                 ", step=" + step +
                 '}';
+    }
+
+    public void setElements(List<String> elements) {
+        this.elements = elements;
+    }
+
+    public List<String> getElements() {
+        return elements;
+    }
+
+    public List<String> getLink() {
+        return link;
+    }
+
+    public void setLink(List<String> link) {
+        this.link = link;
     }
 }

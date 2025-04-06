@@ -3,13 +3,16 @@ package org.example.model.filters.filterModels;
 import dto.FieldType;
 import org.example.model.filters.filterModels.customTypes.Matrix;
 import org.example.model.filters.filterModels.customTypes.MatrixData;
+import org.example.model.filters.filterModels.events.FilterModelObservable;
+import org.example.utils.Pair;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class ModelPrototype {
+public class ModelPrototype extends FilterModelObservable {
     private final HashMap<String, Parameter> parameters = new HashMap<>();
+    private final HashMap<String, Parameter> runtimeParameters = new HashMap<>();
     private final String name;
 
     public ModelPrototype(String name) {
@@ -25,6 +28,42 @@ public class ModelPrototype {
         this.parameters.putAll(parameters);
     }
 
+    public void addRuntimeParameter(String name, FieldType type, List<Object> minorParams) {
+        if (minorParams == null) {
+            throw new RuntimeException("Invalid parameter");
+        }
+
+        switch (type) {
+            case INTEGER, DOUBLE, LIST, MATRIX_DATA -> {
+                // add logic
+            }
+            case MATRIX -> {
+                var data = new Pair<Matrix, Integer>(
+                        new Matrix((int[]) minorParams.getFirst(), (int) minorParams.get(1), (int) minorParams.get(1)),
+                        (int) minorParams.get(2));
+                runtimeParameters.put(name, new Parameter(
+                        type,
+                        data,
+                        (int) minorParams.get(1),
+                        (int) minorParams.get(1),
+                        null,
+                        null)
+                );
+            }
+            default -> {
+                throw new RuntimeException("Invalid type");
+            }
+        }
+    }
+
+    public Parameter getRuntimeParameter(String name) {
+        if (!runtimeParameters.containsKey(name)) {
+            throw new RuntimeException("Invalid parameter");
+        }
+
+        return runtimeParameters.get(name);
+    }
+
     public void addParameter(String name, FieldType type, List<Object> minorParams) {
         if (minorParams == null) {
             throw new RuntimeException("Invalid parameter");
@@ -37,7 +76,8 @@ public class ModelPrototype {
                         minorParams.getFirst(),
                         (int) minorParams.get(1),
                         (int) minorParams.getFirst(),
-                        (Integer) minorParams.get(2)) //step mat be null
+                        (Integer) minorParams.get(2), //step may be null,
+                        null)
                 );
             }
             case MATRIX -> {
@@ -47,8 +87,22 @@ public class ModelPrototype {
                         data,
                         (int) minorParams.get(1),
                         (int) minorParams.getFirst(),
+                        null,
                         null)
                 );
+            }
+            case LIST -> {
+                if (minorParams.getFirst() instanceof List<?> elements &&
+                    minorParams.get(1) instanceof List<?> link) {
+                    parameters.put(name, new Parameter(
+                            type,
+                            (List<String>) elements,
+                            0,
+                            elements.size(),
+                            null,
+                            (List<String>) link
+                    ));
+                }
             }
             case MATRIX_DATA -> {
                 if (minorParams.getFirst() instanceof List<?> data) {
@@ -61,6 +115,7 @@ public class ModelPrototype {
                             matrixData,
                             max,
                             min,
+                            null,
                             null)
                     );
                 }
@@ -70,6 +125,44 @@ public class ModelPrototype {
             }
         }
 
+    }
+
+    public boolean isMatrix(String name) {
+        return parameters.containsKey(name) && parameters.get(name).type == FieldType.MATRIX;
+    }
+
+    public boolean isDouble(String name) {
+        return parameters.containsKey(name) && parameters.get(name).type == FieldType.DOUBLE;
+    }
+
+    public boolean isInteger(String name) {
+        return parameters.containsKey(name) && parameters.get(name).type == FieldType.INTEGER;
+    }
+
+    public List<String> getLinkElements(String name) {
+        if (!parameters.containsKey(name)) {
+            throw new RuntimeException("Invalid parameter");
+        }
+
+        return parameters.get(name).link;
+    }
+
+    public void setListElement(String name, int index) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.LIST) ||
+                index < parameters.get(name).min || index > parameters.get(name).max) {
+            throw new RuntimeException("Invalid parameter");
+        }
+
+        parameters.get(name).index = index;
+    }
+
+    public String getListElement(String name) {
+        if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.LIST)) {
+            return ((List<String>) parameters.get(name).parameter).get(parameters.get(name).index);
+        }
+        else {
+            throw new RuntimeException("Invalid parameter");
+        }
     }
 
     public void setInteger(String name, int value) {
