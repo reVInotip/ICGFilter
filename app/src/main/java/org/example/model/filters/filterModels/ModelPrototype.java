@@ -70,10 +70,20 @@ public class ModelPrototype extends FilterModelObservable {
         }
 
         switch (type) {
-            case INTEGER, DOUBLE -> {
+            case INTEGER -> {
                 parameters.put(name, new Parameter(
                         type,
-                        minorParams.getFirst(),
+                        ((Double) minorParams.getFirst()).intValue(),
+                        (double) minorParams.get(1),
+                        (double) minorParams.getFirst(),
+                        (Integer) minorParams.get(2), //step may be null,
+                        null)
+                );
+            }
+            case DOUBLE -> {
+                parameters.put(name, new Parameter(
+                        type,
+                        (Double) minorParams.getFirst(),
                         (double) minorParams.get(1),
                         (double) minorParams.getFirst(),
                         (Integer) minorParams.get(2), //step may be null,

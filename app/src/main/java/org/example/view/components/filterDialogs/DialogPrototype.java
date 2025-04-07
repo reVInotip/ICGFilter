@@ -24,6 +24,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
     private final ModelPrototype model;
     private final GridBagConstraints gbc;
     private final JButton apply;
+    private final JButton exit;
     private final HashMap<String, List<Object>> updatedElements = new HashMap<>();
     private final JPanel paramsPanel;
 
@@ -37,7 +38,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         headerPanel.setBackground(Color.GRAY);
         headerPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-        JButton exit = new JButton("Exit");
+        exit = new JButton("Exit");
         exit.setBackground(Color.DARK_GRAY);
         exit.setForeground(Color.WHITE);
         exit.addActionListener(e -> DialogPrototype.this.setVisible(false));
@@ -131,6 +132,12 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             model.setInteger(paramName, value);
         });
 
+        exit.addActionListener(actionEvent -> {
+            int value = model.getInteger(paramName);
+            elementSlider.setValue(value);
+            elementSpinner.setValue(value);
+        });
+
         gbc.gridx = 0;
         gbc.gridy = y;
         gbc.anchor = GridBagConstraints.EAST;
@@ -194,6 +201,12 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         slider.addChangeListener(e -> {
             double value = slider.getValue() / (double)SCALE;
             textField.setText(String.valueOf(value));
+        });
+
+        exit.addActionListener(actionEvent -> {
+            double value = model.getDouble(paramName);
+            textField.setText(String.valueOf(value));
+            slider.setValue((int)(value * SCALE));
         });
 
         apply.addActionListener(actionEvent -> {
@@ -276,6 +289,17 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             model.setMatrixData(paramName, newSizeForRed, "red");
         });
 
+        exit.addActionListener(actionEvent -> {
+            int sizeR = model.getMatrixData("kernel size").getCurrSizeForRedChannel();
+            sizeForRedChannel.setSelectedItem(sizeR);
+
+            int sizeG = model.getMatrixData("kernel size").getCurrSizeForGreenChannel();
+            sizeForGreenChannel.setSelectedItem(sizeG);
+
+            int sizeB = model.getMatrixData("kernel size").getCurrSizeForBlueChannel();
+            sizeForBlueChannel.setSelectedItem(sizeB);
+        });
+
         return y + 2;
     }
 
@@ -333,6 +357,19 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
                 }
             }
         });
+
+        exit.addActionListener(actionEvent -> {
+            Matrix matrix1 = model.getMatrix(paramName);
+            int size = matrix1.getWidth();
+            sizeSpinner.setValue(size);
+
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    fields.get().get(i * size + j).setText(String.valueOf(matrix1.get(j, i)));
+                }
+            }
+        });
+
 
         gbc.gridx = 0;
         gbc.gridy = y;
@@ -410,12 +447,17 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         matrixPanel.removeAll();
 
         ArrayList<JTextField> fields = new ArrayList<>();
+        int inputSize = input.getWidth();
         // Создаем текстовые поля для каждого элемента матрицы
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
                 JTextField field = new JTextField(3);
                 field.setHorizontalAlignment(JTextField.CENTER);
-                field.setText(String.valueOf(input.safetyGet(x, y)));
+                if (x < inputSize && y < inputSize) {
+                    field.setText(String.valueOf(input.safetyGet(x, y)));
+                } else {
+                    field.setText(String.valueOf(0));
+                }
 
                 field.addActionListener(new ActionListener() {
                     private String previousText = field.getText();
