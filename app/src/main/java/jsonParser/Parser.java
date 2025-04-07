@@ -57,7 +57,9 @@ public class Parser {
                                 dialogElement.getMax(),
                                 dialogElement.getMin(),
                                 dialogElement.getSize(),
-                                dialogElement.getStep()
+                                dialogElement.getStep(),
+                                dialogElement.getElements(),
+                                dialogElement.getLink()
                         ));
                     }
 

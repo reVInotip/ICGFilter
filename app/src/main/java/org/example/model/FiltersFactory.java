@@ -48,7 +48,8 @@ class FiltersFactory {
             return filterClass.getConstructor(ModelPrototype.class).newInstance(filterModel);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
-            System.err.println("Class not found");
+            System.err.println("Class not found " + filterClass + ". Reason: " + e.getCause());
+            e.getCause().printStackTrace();
             throw new RuntimeException(e);
         }
     }

@@ -12,14 +12,18 @@ public class FilterParam {
     public List<Integer> size;
     public Integer step;
     public String name;
+    public List<String> elements;
+    public List<String> link;
 
-    public FilterParam(String name, FieldType type, Integer max, Integer min, List<Integer> size, Integer step) {
+    public FilterParam(String name, FieldType type, Integer max, Integer min, List<Integer> size, Integer step, List<String> elements, List<String> link) {
         this.type = type;
         this.max = max;
         this.min = min;
         this.step = step;
         this.name = name;
         this.size = size;
+        this.elements = elements;
+        this.link = link;
     }
 
     public List<Object> getMinorParamsList() {
@@ -41,6 +45,13 @@ public class FilterParam {
                 minorParams.add(min);
                 minorParams.add(max);
             }
+            case LIST -> {
+                if (link == null) {
+                    return null;
+                }
+                minorParams.add(elements);
+                minorParams.add(link);
+            }
             case MATRIX_DATA -> {
                 if (size == null || size.isEmpty()) {
                     return null;
@@ -56,6 +67,11 @@ public class FilterParam {
         switch (type) {
             case INTEGER, DOUBLE, MATRIX -> {
                 if (min == null || max == null) {
+                    return false;
+                }
+            }
+            case LIST -> {
+                if (elements == null) {
                     return false;
                 }
             }

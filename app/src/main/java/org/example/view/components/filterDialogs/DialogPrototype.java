@@ -3,6 +3,10 @@ package org.example.view.components.filterDialogs;
 import dto.FilterParam;
 import org.example.model.filters.filterModels.ModelPrototype;
 import org.example.model.filters.filterModels.customTypes.Matrix;
+import org.example.model.filters.filterModels.events.FilterModelEvent;
+import org.example.model.filters.filterModels.events.FilterModelObserver;
+import org.example.model.filters.filterModels.events.UpdateMatrixEvent;
+import org.example.utils.Pair;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,12 +16,15 @@ import java.util.Map;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class DialogPrototype extends JDialog {
+public class DialogPrototype extends JDialog implements FilterModelObserver {
     private final ModelPrototype model;
     private final GridBagConstraints gbc;
     private final JButton apply;
+    private final HashMap<String, List<Object>> updatedElements = new HashMap<>();
 
-    private int addSimpleElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
+    private final int SCALE = 100;
+
+    private int addIntegerElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
         final JSlider elementSlider = new JSlider(JSlider.HORIZONTAL, min, max, min);
         final JLabel elementLabel = new JLabel(paramName);
@@ -52,6 +59,12 @@ public class DialogPrototype extends JDialog {
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(elementSlider, gbc);
 
+        var ue = new ArrayList<>();
+        ue.add(elementSpinner);
+        ue.add(elementSlider);
+
+        updatedElements.put(paramName, ue);
+
         return y + 1;
     }
 
@@ -61,7 +74,6 @@ public class DialogPrototype extends JDialog {
 
         textField.setText(String.valueOf(min)); // Устанавливаем начальное значение. тут наверное будет баг
 
-        final int SCALE = 100;
         final JSlider slider = new JSlider(JSlider.HORIZONTAL,
                 (int)(min * SCALE),
                 (int)(max * SCALE),
@@ -104,6 +116,12 @@ public class DialogPrototype extends JDialog {
         gbc.gridy = y + 1;
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(slider, gbc);
+
+        var ue = new ArrayList<>();
+        ue.add(textField);
+        ue.add(slider);
+
+        updatedElements.put(paramName, ue);
 
         return y + 1;
     }
@@ -172,12 +190,11 @@ public class DialogPrototype extends JDialog {
 
         matrixPanel.setLayout(new GridLayout(0, minSize, 5, 5));
 
-        AtomicReference<ArrayList<JTextField>> fields = new AtomicReference<>(updateMatrixPanel(matrixPanel, matrix.getWidth(), paramName));
+        AtomicReference<ArrayList<JTextField>> fields = new AtomicReference<>(updateMatrixPanel(matrixPanel, matrix, matrix.getWidth()));
 
         sizeSpinner.addChangeListener(e -> {
             int newSize = (int) sizeSpinner.getValue();
-            matrixPanel.setLayout(new GridLayout(0, newSize, 5, 5));
-            fields.set(updateMatrixPanel(matrixPanel, newSize, paramName));
+            fields.set(updateMatrixPanel(matrixPanel, matrix, newSize));
             panel.revalidate();
         });
 
@@ -216,10 +233,55 @@ public class DialogPrototype extends JDialog {
         panel.add(matrixPanel, gbc);
         gbc.gridwidth = 1;
 
+        var ue = new ArrayList<>();
+        ue.add(panel);
+        ue.add(matrixPanel);
+        ue.add(fields);
+        ue.add(sizeSpinner);
+
+        updatedElements.put(paramName, ue);
+
         return y + 1;
     }
 
-    private ArrayList<JTextField> updateMatrixPanel(JPanel matrixPanel, int size, String paramName) {
+    private int addStringList(JPanel panel, String paramName, List<String> elements, int y) {
+        JButton button = new JButton(paramName);
+
+        JPopupMenu popupMenu = new JPopupMenu();
+        for (String element: elements) {
+            JMenuItem item = new JMenuItem(element);
+            if (model.getLinkElements(paramName) != null) {
+                item.addActionListener(actionEvent -> {
+                    List<String> linkEl = model.getLinkElements(paramName);
+                    if (model.isMatrix(linkEl.getFirst()) && model.isInteger(linkEl.get(1))) {
+                        model.update(new UpdateMatrixEvent(linkEl.getFirst(), linkEl.get(1), element));
+                    }
+                });
+            }
+            popupMenu.add(item);
+        }
+
+        if (model.getLinkElements(paramName) == null) {
+            apply.addActionListener(actionEvent -> {
+                int selectedElement = popupMenu.getSelectionModel().getSelectedIndex();
+                model.setListElement(paramName, selectedElement);
+            });
+        }
+
+        button.addActionListener(actionEvent -> {
+            popupMenu.show(button, 0, button.getHeight());
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panel.add(button, gbc);
+
+        return y;
+    }
+
+    private ArrayList<JTextField> updateMatrixPanel(JPanel matrixPanel, Matrix input, int size) {
+        matrixPanel.setLayout(new GridLayout(0, size, 5, 5));
         matrixPanel.removeAll();
 
         ArrayList<JTextField> fields = new ArrayList<>();
@@ -228,7 +290,7 @@ public class DialogPrototype extends JDialog {
             for (int x = 0; x < size; x++) {
                 JTextField field = new JTextField(3);
                 field.setHorizontalAlignment(JTextField.CENTER);
-                field.setText(String.valueOf(model.getMatrix(paramName).safetyGet(x, y)));
+                field.setText(String.valueOf(input.safetyGet(x, y)));
                 matrixPanel.add(field);
                 fields.add(field);
             }
@@ -241,13 +303,16 @@ public class DialogPrototype extends JDialog {
         if (element.isValid()) {
             switch (element.type) {
                 case INTEGER -> {
-                    return addSimpleElement(panel, element.name, element.max, element.min, element.step, y);
+                    return addIntegerElement(panel, element.name, element.max, element.min, element.step, y);
                 }
                 case DOUBLE -> {
                     return addDoubleElement(panel, element.name, element.max, element.min, y);
                 }
                 case MATRIX -> {
                     return addMatrixElement(panel, element.name, element.max, element.min, y);
+                }
+                case LIST -> {
+                    return addStringList(panel, element.name, element.elements, y);
                 }
                 case MATRIX_DATA -> {
                     return addMatrixDataElement(panel, element.name, element.size, y);
@@ -285,5 +350,34 @@ public class DialogPrototype extends JDialog {
 
         setMinimumSize(new Dimension(300, 300));
         setLocationRelativeTo(parent);
+
+        model.add(this);
+    }
+
+    @Override
+    public void update(FilterModelEvent event) {
+        if (event instanceof UpdateMatrixEvent updatedEvent) {
+            List<Object> updatedEl = updatedElements.get(updatedEvent.paramName);
+            JPanel mainPanel = (JPanel) updatedEl.getFirst();
+            JPanel matrixPanel = (JPanel) updatedEl.get(1);
+            AtomicReference<ArrayList<JTextField>> fields = (AtomicReference<ArrayList<JTextField>>) updatedEl.get(2);
+            JSpinner sizeSpinner = (JSpinner) updatedEl.get(3);
+
+            Pair<Matrix, Integer> data = (Pair<Matrix,Integer>) model.getRuntimeParameter(updatedEvent.matrixName).parameter;
+
+            Matrix input = data.first;
+            sizeSpinner.setValue(input.getWidth());
+
+            fields.set(updateMatrixPanel(matrixPanel, input, input.getWidth()));
+            mainPanel.revalidate();
+
+            updatedEl = updatedElements.get(updatedEvent.dividerName);
+            JSpinner dividerSpinner = (JSpinner) updatedEl.getFirst();
+            JSlider dividerSlider = (JSlider) updatedEl.get(1);
+            int divider = data.second;
+
+            dividerSlider.setValue(divider);
+           dividerSpinner.setValue(divider);
+        }
     }
 }

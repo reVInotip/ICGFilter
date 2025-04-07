@@ -15,6 +15,12 @@ public class Matrix {
         this.data = new int[width * height];
     }
 
+    public Matrix(int[] data, int width, int height) {
+        this.width = width;
+        this.height = height;
+        this.data = data;
+    }
+
     public void set(int x, int y, int item) {
         if (x * width + y >= width * height) {
             return;
