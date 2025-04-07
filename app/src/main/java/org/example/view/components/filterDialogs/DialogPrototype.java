@@ -84,6 +84,10 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         model.add(this);
     }
 
+    private void showErrorDialog(String text) {
+        JOptionPane.showMessageDialog(this, text, "Error",JOptionPane.ERROR_MESSAGE);
+    }
+
     private int addIntegerElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
         final JSlider elementSlider = new JSlider(JSlider.HORIZONTAL, min, max, min);
@@ -91,12 +95,26 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
 
         elementSlider.addChangeListener(changeEvent -> {
             int value = elementSlider.getValue();
-            elementSpinner.setValue(value);
+            String text = model.checkInteger(paramName, value);
+            if (text != null) {
+                value = Integer.parseInt(String.valueOf(elementSpinner.getValue()));
+                elementSlider.setValue(value);
+                showErrorDialog(text);
+            } else {
+                elementSpinner.setValue(value);
+            }
         });
 
         elementSpinner.addChangeListener(changeEvent -> {
             int value = Integer.parseInt(String.valueOf(elementSpinner.getValue()));
-            elementSlider.setValue(value);
+            String text = model.checkInteger(paramName, value);
+            if (text != null) {
+                value = elementSlider.getValue();
+                elementSpinner.setValue(value);
+                showErrorDialog(text);
+            } else {
+                elementSlider.setValue(value);
+            }
         });
 
         apply.addActionListener(actionEvent -> {

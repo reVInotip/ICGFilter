@@ -156,6 +156,16 @@ public class ModelPrototype extends FilterModelObservable {
         parameters.get(name).index = index;
     }
 
+    public String checkListIndex(String name, int index) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.LIST)) {
+            return "Parameter doesn't exists or it's type is not list";
+        } else if (index < parameters.get(name).min || index > parameters.get(name).max) {
+            return "List index should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
+    }
+
     public String getListElement(String name) {
         if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.LIST)) {
             return ((List<String>) parameters.get(name).parameter).get(parameters.get(name).index);
@@ -172,6 +182,16 @@ public class ModelPrototype extends FilterModelObservable {
         }
 
         parameters.get(name).parameter = value;
+    }
+
+    public String checkInteger(String name, int value) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.INTEGER)) {
+            return "Parameter doesn't exists or it's type is not integer";
+        } else if (value < parameters.get(name).min || value > parameters.get(name).max) {
+            return "Value should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
     }
 
     public void setMatrix(String name, int x, int y, int value) {
@@ -235,6 +255,16 @@ public class ModelPrototype extends FilterModelObservable {
         }
     }
 
+    public String checkMatrixSize(String name, int size) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.MATRIX_DATA)) {
+            return "Parameter doesn't exists or it's type is not matrix data";
+        } else if (size < parameters.get(name).min || size > parameters.get(name).max) {
+            return "Matrix size should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
+    }
+
     public String getName() {
         return name;
     }
@@ -245,5 +275,15 @@ public class ModelPrototype extends FilterModelObservable {
             throw new RuntimeException("Invalid parameter");
         }
         parameters.get(paramName).parameter = value;
+    }
+
+    public String checkDouble(String name, double value) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.DOUBLE)) {
+            return "Parameter doesn't exists or it's type is not double";
+        } else if (value < parameters.get(name).min || value > parameters.get(name).max) {
+            return "Value should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
     }
 }
