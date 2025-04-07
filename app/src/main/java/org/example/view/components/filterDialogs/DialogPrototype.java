@@ -21,8 +21,68 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
     private final GridBagConstraints gbc;
     private final JButton apply;
     private final HashMap<String, List<Object>> updatedElements = new HashMap<>();
+    private final JPanel paramsPanel;
 
     private final int SCALE = 100;
+
+    public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
+        super(parent, "Settings for: " + name, true);
+        this.model = model;
+
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(Color.GRAY);
+        headerPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+
+        JButton exit = new JButton("Exit");
+        exit.setBackground(Color.DARK_GRAY);
+        exit.setForeground(Color.WHITE);
+        exit.addActionListener(e -> DialogPrototype.this.setVisible(false));
+        headerPanel.add(exit, BorderLayout.NORTH);
+
+        JLabel header = new JLabel("Settings for: " + name);
+        header.setForeground(Color.WHITE);
+        headerPanel.add(header, BorderLayout.NORTH);
+
+        apply = new JButton("Apply");
+        apply.setBackground(Color.DARK_GRAY);
+        apply.setForeground(new Color(5, 255, 144));
+        apply.addActionListener(actionEvent -> DialogPrototype.this.setVisible(false));
+        headerPanel.add(apply, BorderLayout.NORTH);
+
+        System.out.println("Label " + header.getMinimumSize() + " apply " + apply.getWidth() + " exit " + exit.getWidth());
+
+        paramsPanel = new JPanel(new GridBagLayout());
+        paramsPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5); // Отступы между компонентами
+
+        int y = 0;
+        for (Map.Entry<String, FilterParam> dialogElement: dialogElements.entrySet()) {
+            y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
+        }
+
+        paramsPanel.setPreferredSize(new Dimension(300, 300));
+
+        add(paramsPanel, BorderLayout.CENTER);
+        add(headerPanel, BorderLayout.NORTH);
+
+        int width = Math.max(
+                headerPanel.getMinimumSize().width,
+                paramsPanel.getMinimumSize().width
+        );
+
+        int height = headerPanel.getMinimumSize().height + paramsPanel.getMinimumSize().height + 30;
+
+        setMinimumSize(new Dimension(width, height));
+        setLocationRelativeTo(parent);
+        setResizable(false);
+
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);  // Запрещает закрытие через крестик
+        setUndecorated(true);  // Убирает всю рамку (включая заголовок и кнопки)
+
+        model.add(this);
+    }
 
     private int addIntegerElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
@@ -230,7 +290,9 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         gbc.gridx = 0;
         gbc.gridy = y + 1;
         gbc.gridwidth = 2;
+        gbc.weightx = 1;
         panel.add(matrixPanel, gbc);
+        gbc.weightx = 0;
         gbc.gridwidth = 1;
 
         var ue = new ArrayList<>();
@@ -281,6 +343,12 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
     }
 
     private ArrayList<JTextField> updateMatrixPanel(JPanel matrixPanel, Matrix input, int size) {
+        int width = getMinimumSize().width - matrixPanel.getMinimumSize().width;
+        int height = getMinimumSize().height - matrixPanel.getMinimumSize().height;
+
+        int paramsWidth = paramsPanel.getMinimumSize().width - matrixPanel.getMinimumSize().width;
+        int paramsHeight = paramsPanel.getMinimumSize().height - matrixPanel.getMinimumSize().height;
+
         matrixPanel.setLayout(new GridLayout(0, size, 5, 5));
         matrixPanel.removeAll();
 
@@ -295,6 +363,26 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
                 fields.add(field);
             }
         }
+
+        paramsPanel.setMinimumSize(new Dimension(
+                paramsWidth + matrixPanel.getMinimumSize().width,
+                paramsHeight + matrixPanel.getMinimumSize().height
+        ));
+
+        paramsPanel.setSize(new Dimension(
+                width + matrixPanel.getMinimumSize().width,
+                height + matrixPanel.getMinimumSize().height
+        ));
+
+        setMinimumSize(new Dimension(
+                width + matrixPanel.getMinimumSize().width,
+                height + matrixPanel.getMinimumSize().height
+        ));
+
+        setSize(new Dimension(
+                width + matrixPanel.getMinimumSize().width,
+                height + matrixPanel.getMinimumSize().height
+        ));
 
         return fields;
     }
@@ -322,38 +410,6 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         return y;
     }
 
-    public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
-        super(parent, "Окно настроек для инструмента: " + name, true);
-        this.model = model;
-        apply = new JButton("Apply");
-
-        apply.setBackground(Color.GREEN);
-
-        apply.addActionListener(actionEvent -> {
-            DialogPrototype.this.setVisible(false);
-        });
-
-        JPanel paramsPanel = new JPanel(new GridBagLayout());
-        gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5); // Отступы между компонентами
-
-        int y = 0;
-        for (Map.Entry<String, FilterParam> dialogElement: dialogElements.entrySet()) {
-            y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
-        }
-
-        paramsPanel.setPreferredSize(new Dimension(300, 300));
-
-        add(new JScrollPane(paramsPanel), BorderLayout.CENTER);
-        add(apply, BorderLayout.SOUTH);
-
-        setMinimumSize(new Dimension(300, 300));
-        setLocationRelativeTo(parent);
-
-        model.add(this);
-    }
-
     @Override
     public void update(FilterModelEvent event) {
         if (event instanceof UpdateMatrixEvent updatedEvent) {
@@ -377,7 +433,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             int divider = data.second;
 
             dividerSlider.setValue(divider);
-           dividerSpinner.setValue(divider);
+            dividerSpinner.setValue(divider);
         }
     }
 }
