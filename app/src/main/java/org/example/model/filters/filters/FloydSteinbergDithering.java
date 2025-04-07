@@ -52,11 +52,11 @@ public class FloydSteinbergDithering extends FilterPrototype {
         int step = 16;
         switch (shift) {
             case 16:
-                step = 255 / (filterModel.getInteger("red level") - 1);
+                step = 255 / (filterModel.getInteger("red level"));
             case 8:
-                step = 255 / (filterModel.getInteger("green level") - 1);
+                step = 255 / (filterModel.getInteger("green level"));
             case 0:
-                step = 255 / (filterModel.getInteger("blue level") - 1);
+                step = 255 / (filterModel.getInteger("blue level"));
         }
 
         int newColor = (oldColor + step / 2) / step * step; // С округлением

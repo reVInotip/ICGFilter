@@ -11,140 +11,163 @@ import java.util.List;
 
 @Filter(descr = "Дизеринг", icon = "")
 public class OrderedDither2 extends FilterPrototype {
-    final private List<Integer[]> matrices = new ArrayList<>();
-    final private List<Integer> sizes = new ArrayList<>();
+    private static final int MAX_COLOR_VALUE = 255;
+    private static final int COLOR_CHANNELS = 3; // RGB
+
+    private final List<Integer[]> thresholdMatrices = new ArrayList<>();
+    private final List<Integer> matrixSizes = new ArrayList<>();
 
     public OrderedDither2(ModelPrototype filterModel) {
         super(filterModel);
+        initializeThresholdMatrices();
+    }
 
-        matrices.add(new Integer[]{0});
-        sizes.add(1);
+    private void initializeThresholdMatrices() {
+        // Базовый случай: матрица 1x1
+        thresholdMatrices.add(new Integer[]{0});
+        matrixSizes.add(1);
 
-        int baseSize = 2;
+        int currentSize = 2;
         for (int i = 0; i < 4; ++i) {
-            Integer[] newMatrix = new Integer[baseSize * baseSize];
-            Integer[] prevMatrix = matrices.getLast();
-            int prY;
+            Integer[] newMatrix = new Integer[currentSize * currentSize];
+            Integer[] previousMatrix = thresholdMatrices.get(thresholdMatrices.size() - 1);
+            int halfSize = currentSize / 2;
 
-            for (int y = 0; y < baseSize / 2; ++y) {
-                prY = y % (baseSize / 2);
-                for (int x = 0; x < baseSize / 2; ++x) {
-                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)];
-                }
-                for (int x = baseSize / 2; x < baseSize; ++x) {
-                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)] + 2;
-                }
-            }
+            generateMatrixQuadrants(newMatrix, previousMatrix, currentSize, halfSize);
 
-            for (int y = baseSize / 2; y < baseSize; ++y) {
-                prY = y % (baseSize / 2);
-                for (int x = 0; x < baseSize / 2; ++x) {
-                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)] + 3;
-                }
-                for (int x = baseSize / 2; x < baseSize; ++x) {
-                    newMatrix[y * baseSize + x] = 4 * prevMatrix[prY * (baseSize / 2) + x % (baseSize / 2)] + 1;
-                }
-            }
-
-            matrices.add(newMatrix);
-            sizes.add(baseSize);
-
-            baseSize *= 2;
+            thresholdMatrices.add(newMatrix);
+            matrixSizes.add(currentSize);
+            currentSize *= 2;
         }
     }
 
-    private int transform(int intensity, int x, int y, ArrayList<Integer> palette, Integer[] matrix, int matrixSize) {
-        double matrixValue = ((double) matrix[y * matrixSize + x]) / (matrixSize * matrixSize);
-        double updatedIntensity = intensity + matrixValue * 256 - 128;
+    private void generateMatrixQuadrants(Integer[] newMatrix, Integer[] previousMatrix,
+                                         int size, int halfSize) {
+        // Верхний левый квадрант
+        fillQuadrant(newMatrix, previousMatrix, size, halfSize, 0, 0, 0);
+        // Верхний правый квадрант
+        fillQuadrant(newMatrix, previousMatrix, size, halfSize, 0, halfSize, 2);
+        // Нижний левый квадрант
+        fillQuadrant(newMatrix, previousMatrix, size, halfSize, halfSize, 0, 3);
+        // Нижний правый квадрант
+        fillQuadrant(newMatrix, previousMatrix, size, halfSize, halfSize, halfSize, 1);
+    }
 
-        int color = 0;
-        int distance = Integer.MAX_VALUE;
-
-        for (Integer integer : palette) {
-            if (Math.abs(integer - updatedIntensity) < distance) {
-                distance = (int) Math.abs(integer - updatedIntensity);
-                color = integer;
+    private void fillQuadrant(Integer[] newMatrix, Integer[] previousMatrix, int size,
+                              int halfSize, int startY, int startX, int offset) {
+        for (int y = 0; y < halfSize; ++y) {
+            for (int x = 0; x < halfSize; ++x) {
+                int newY = startY + y;
+                int newX = startX + x;
+                int prevIndex = y * halfSize + x;
+                newMatrix[newY * size + newX] = 4 * previousMatrix[prevIndex] + offset;
             }
         }
-
-        return color;
     }
 
-    private int findSuitableMatrix(int quantizationNumber) {
-        if (quantizationNumber >= 2 && quantizationNumber < 30) {
-            return 4;
-        } else if (quantizationNumber >= 30 && quantizationNumber < 60) {
-            return 3;
-        } else if (quantizationNumber >= 60 && quantizationNumber < 90) {
-            return 2;
-        } else {
-            return 1;
-        }
+    private int findOptimalMatrixSize(int quantizationLevels) {
+        if (quantizationLevels < 2) return 1;
+        if (quantizationLevels < 30) return 4;
+        if (quantizationLevels < 60) return 3;
+        if (quantizationLevels < 90) return 2;
+        return 1;
     }
 
-    private ArrayList<Integer> createPalette(int quantizationNumber) {
-        int step = (int) Math.round(255.0 / quantizationNumber);
-
+    private ArrayList<Integer> generateColorPalette(int quantizationLevels) {
         ArrayList<Integer> palette = new ArrayList<>();
-        for (int i = 0; i <= 255 - step; i += step) {
-            palette.add(i);
+        if (quantizationLevels <= 1) {
+            palette.add(MAX_COLOR_VALUE);
+            return palette;
         }
 
-        palette.add(255);
+        int step = Math.max(1, MAX_COLOR_VALUE / (quantizationLevels - 1));
+        for (int i = 0; i <= MAX_COLOR_VALUE; i += step) {
+            palette.add(Math.min(i, MAX_COLOR_VALUE));
+        }
 
         return palette;
     }
 
-    public void convert(BufferedImage image, BufferedImage result) {
-        if (image == null) {
-            throw new IllegalArgumentException("Image cannot be null");
-        }
+    private int applyDithering(int colorValue, int x, int y,
+                               ArrayList<Integer> palette,
+                               Integer[] matrix, int matrixSize) {
+        double threshold = ((double) matrix[y * matrixSize + x]) / (matrixSize * matrixSize);
+        double modifiedValue = colorValue + threshold * 256 - 128;
 
-        int redQuantizationNumber = filterModel.getInteger("red quantization number");
-        int greenQuantizationNumber = filterModel.getInteger("green quantization number");
-        int blueQuantizationNumber = filterModel.getInteger("blue quantization number");
+        return findClosestColor(modifiedValue, palette);
+    }
 
-        ArrayList<Integer> paletteForRed = createPalette(redQuantizationNumber);
-        ArrayList<Integer> paletteForGreen = createPalette(greenQuantizationNumber);
-        ArrayList<Integer> paletteForBlue = createPalette(blueQuantizationNumber);
+    private int findClosestColor(double value, ArrayList<Integer> palette) {
+        int closestColor = 0;
+        double minDistance = Double.MAX_VALUE;
 
-        int suitRedMatrixIndex = findSuitableMatrix(redQuantizationNumber);
-        int suitBlueMatrixIndex = findSuitableMatrix(blueQuantizationNumber);
-        int suitGreenMatrixIndex = findSuitableMatrix(greenQuantizationNumber);
-
-        Integer[] redMatrix = matrices.get(suitRedMatrixIndex);
-        Integer[] blueMatrix = matrices.get(suitBlueMatrixIndex);
-        Integer[] greenMatrix = matrices.get(suitGreenMatrixIndex);
-
-        int redMatrixSize = sizes.get(suitRedMatrixIndex);
-        int blueMatrixSize = sizes.get(suitBlueMatrixIndex);
-        int greenMatrixSize = sizes.get(suitGreenMatrixIndex);
-
-        int color, red, green, blue, alpha, x, y;
-        for (int i = 0; i < image.getHeight(); ++i) {
-            for (int j = 0; j < image.getWidth(); ++j) {
-                color = image.getRGB(j, i);
-
-                x = j % redMatrixSize;
-                y = i % redMatrixSize;
-                red = transform((color & 0xff0000) >> 16, x, y, paletteForRed, redMatrix, redMatrixSize);
-
-                x = j % greenMatrixSize;
-                y = i % greenMatrixSize;
-                green = transform((color & 0xff00) >> 8, x, y, paletteForGreen, greenMatrix, greenMatrixSize);
-
-                x = j % blueMatrixSize;
-                y = i % blueMatrixSize;
-                blue = transform(color & 0xff, x, y, paletteForBlue, blueMatrix, blueMatrixSize);
-
-                alpha = (color & 0xff000000) >> 24;
-
-                color = 0;
-                color |= blue | (green << 8) | (red << 16) | (alpha << 24);
-                result.setRGB(j, i, color);
+        for (int color : palette) {
+            double distance = Math.abs(color - value);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestColor = color;
             }
         }
 
-        update(new FiltrationCompletedEvent(result));
+        return closestColor;
+    }
+
+    private int processColorChannel(int colorValue, int x, int y,
+                                    ArrayList<Integer> palette,
+                                    Integer[] matrix, int matrixSize) {
+        x %= matrixSize;
+        y %= matrixSize;
+        return applyDithering(colorValue, x, y, palette, matrix, matrixSize);
+    }
+
+    @Override
+    public void convert(BufferedImage sourceImage, BufferedImage resultImage) {
+        if (sourceImage == null || resultImage == null) {
+            throw new IllegalArgumentException("Source and result images cannot be null");
+        }
+
+        int[] quantizationLevels = {
+                filterModel.getInteger("red quantization number"),
+                filterModel.getInteger("green quantization number"),
+                filterModel.getInteger("blue quantization number")
+        };
+
+        List<ArrayList<Integer>> palettes = new ArrayList<>();
+        List<Integer[]> matrix = new ArrayList<>();
+        List<Integer> matrixSizes = new ArrayList<>();
+
+        for (int i = 0; i < COLOR_CHANNELS; i++) {
+            palettes.add(generateColorPalette(quantizationLevels[i]));
+            int matrixIndex = findOptimalMatrixSize(quantizationLevels[i]);
+            matrix.add(thresholdMatrices.get(matrixIndex));
+            matrixSizes.add(this.matrixSizes.get(matrixIndex));
+        }
+
+        processImagePixels(sourceImage, resultImage, palettes, matrix, matrixSizes);
+        update(new FiltrationCompletedEvent(resultImage));
+    }
+
+    private void processImagePixels(BufferedImage source, BufferedImage result,
+                                    List<ArrayList<Integer>> palettes,
+                                    List<Integer[]> matrices,
+                                    List<Integer> matrixSizes) {
+        for (int y = 0; y < source.getHeight(); y++) {
+            for (int x = 0; x < source.getWidth(); x++) {
+                int rgb = source.getRGB(x, y);
+
+                int red = processColorChannel((rgb >> 16) & 0xFF, x, y,
+                        palettes.get(0), matrices.get(0), matrixSizes.get(0));
+
+                int green = processColorChannel((rgb >> 8) & 0xFF, x, y,
+                        palettes.get(1), matrices.get(1), matrixSizes.get(1));
+
+                int blue = processColorChannel(rgb & 0xFF, x, y,
+                        palettes.get(2), matrices.get(2), matrixSizes.get(2));
+
+                int alpha = (rgb >> 24) & 0xFF;
+                int newRgb = (alpha << 24) | (red << 16) | (green << 8) | blue;
+                result.setRGB(x, y, newRgb);
+            }
+        }
     }
 }
