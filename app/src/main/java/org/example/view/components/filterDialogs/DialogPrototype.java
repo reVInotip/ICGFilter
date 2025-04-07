@@ -9,7 +9,11 @@ import org.example.model.filters.filterModels.events.UpdateMatrixEvent;
 import org.example.utils.Pair;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.event.*;
+import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -95,26 +99,31 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
 
         elementSlider.addChangeListener(changeEvent -> {
             int value = elementSlider.getValue();
-            String text = model.checkInteger(paramName, value);
-            if (text != null) {
-                value = Integer.parseInt(String.valueOf(elementSpinner.getValue()));
-                elementSlider.setValue(value);
-                showErrorDialog(text);
-            } else {
-                elementSpinner.setValue(value);
+            elementSpinner.setValue(value);
+        });
+
+        ((JSpinner.DefaultEditor)elementSpinner.getEditor()).getTextField().addFocusListener( new FocusAdapter()
+        {
+            public void focusGained(FocusEvent e) {}
+
+            public void focusLost(FocusEvent e)
+            {
+                JTextField textField = (JTextField)e.getSource();
+                try {
+                    int value = Integer.parseInt(textField.getText());
+                    String text = model.checkInteger(paramName, value);
+                    if (text != null) {
+                        showErrorDialog(text);
+                    }
+                } catch (Exception er) {
+                    showErrorDialog("Incorrect input! Only numbers");
+                }
             }
         });
 
         elementSpinner.addChangeListener(changeEvent -> {
             int value = Integer.parseInt(String.valueOf(elementSpinner.getValue()));
-            String text = model.checkInteger(paramName, value);
-            if (text != null) {
-                value = elementSlider.getValue();
-                elementSpinner.setValue(value);
-                showErrorDialog(text);
-            } else {
-                elementSlider.setValue(value);
-            }
+            elementSlider.setValue(value);
         });
 
         apply.addActionListener(actionEvent -> {
@@ -147,6 +156,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
     }
 
     private int addDoubleElement(JPanel panel, String paramName, double max, double min, int y) {
+        System.out.println(min);
         final JTextField textField = new JTextField(5);
         textField.setFont(new Font("Arial", Font.PLAIN, 14));
 
@@ -159,14 +169,25 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
 
         final JLabel label = new JLabel(paramName);
 
-        textField.addActionListener(e -> {
-            try {
-                double value = Double.parseDouble(textField.getText());
-                slider.setValue((int)(value * SCALE));
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(panel,
-                        "Введите корректное значение",
-                        "Ошибка", JOptionPane.ERROR_MESSAGE);
+        textField.addActionListener(new ActionListener() {
+            private String previousText = textField.getText();
+
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    double value = Double.parseDouble(textField.getText());
+                    String message = model.checkDouble(paramName, value);
+                    if (message != null) {
+                        textField.setText(previousText);
+                        showErrorDialog(message);
+                    } else {
+                        previousText = textField.getText();
+                        slider.setValue((int)(value * SCALE));
+                    }
+                } catch (NumberFormatException ex) {
+                    showErrorDialog("Incorrect input! Only numbers");
+                    textField.setText(previousText);
+                }
             }
         });
 
@@ -206,7 +227,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
 
     private int addMatrixDataElement(JPanel panel, String paramName, List<Integer> sizes, int y) {
         final JComboBox<Integer> sizeForRedChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
-        final JLabel labelForRedCh = new JLabel(paramName + " (красный канал)");
+        final JLabel labelForRedCh = new JLabel(paramName + " (red channel)");
 
         gbc.gridx = 0;
         gbc.gridy = y;
@@ -219,7 +240,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         panel.add(sizeForRedChannel, gbc);
 
         final JComboBox<Integer> sizeForBlueChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
-        final JLabel labelForBlueCh = new JLabel(paramName + " (синий канал)");
+        final JLabel labelForBlueCh = new JLabel(paramName + " (blue channel)");
 
         gbc.gridx = 0;
         gbc.gridy = y + 1;
@@ -232,7 +253,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         panel.add(sizeForBlueChannel, gbc);
 
         final JComboBox<Integer> sizeForGreenChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
-        final JLabel labelForGreenCh = new JLabel(paramName + " (зелёный канал)");
+        final JLabel labelForGreenCh = new JLabel(paramName + " (green channel)");
 
         gbc.gridx = 0;
         gbc.gridy = y + 2;
@@ -276,6 +297,25 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             panel.revalidate();
         });
 
+        ((JSpinner.DefaultEditor)sizeSpinner.getEditor()).getTextField().addFocusListener( new FocusAdapter()
+        {
+            public void focusGained(FocusEvent e) {}
+
+            public void focusLost(FocusEvent e)
+            {
+                JTextField textField = (JTextField)e.getSource();
+                try {
+                    int value = Integer.parseInt(textField.getText());
+                    String text = model.checkMatrixSize(paramName, value);
+                    if (text != null) {
+                        showErrorDialog(text);
+                    }
+                } catch (Exception er) {
+                    showErrorDialog("Incorrect input! Only numbers");
+                }
+            }
+        });
+
         apply.addActionListener(actionEvent -> {
             int newSize = (int) sizeSpinner.getValue();
             model.getMatrix(paramName).resize(newSize, newSize);
@@ -288,8 +328,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
                         int value = Integer.parseInt(field.getText());
                         model.setMatrix(paramName, j, i, value);
                     } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(matrixPanel,
-                                "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                        showErrorDialog("Incorrect input! Only numbers");
                     }
                 }
             }
@@ -377,6 +416,22 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
                 JTextField field = new JTextField(3);
                 field.setHorizontalAlignment(JTextField.CENTER);
                 field.setText(String.valueOf(input.safetyGet(x, y)));
+
+                field.addActionListener(new ActionListener() {
+                    private String previousText = field.getText();
+
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        try {
+                            Integer.parseInt(field.getText());
+                            previousText = field.getText();
+                        } catch (NumberFormatException ex) {
+                            showErrorDialog("Incorrect input! Only numbers");
+                            field.setText(previousText);
+                        }
+                    }
+                });
+
                 matrixPanel.add(field);
                 fields.add(field);
             }
@@ -409,13 +464,13 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         if (element.isValid()) {
             switch (element.type) {
                 case INTEGER -> {
-                    return addIntegerElement(panel, element.name, element.max, element.min, element.step, y);
+                    return addIntegerElement(panel, element.name,element.max.intValue(), element.min.intValue(), element.step, y);
                 }
                 case DOUBLE -> {
                     return addDoubleElement(panel, element.name, element.max, element.min, y);
                 }
                 case MATRIX -> {
-                    return addMatrixElement(panel, element.name, element.max, element.min, y);
+                    return addMatrixElement(panel, element.name, element.max.intValue(), element.min.intValue(), y);
                 }
                 case LIST -> {
                     return addStringList(panel, element.name, element.elements, y);
