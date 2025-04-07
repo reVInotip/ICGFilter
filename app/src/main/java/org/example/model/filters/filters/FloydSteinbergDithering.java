@@ -49,8 +49,16 @@ public class FloydSteinbergDithering extends FilterPrototype {
     }
 
     private int applyDithering(int oldColor, int x, int y, int width, int height, BufferedImage image, int shift) {
+        int step = 16;
+        switch (shift) {
+            case 16:
+                step = 255 / (filterModel.getInteger("red level") - 1);
+            case 8:
+                step = 255 / (filterModel.getInteger("green level") - 1);
+            case 0:
+                step = 255 / (filterModel.getInteger("blue level") - 1);
+        }
 
-        int step = 255 / (filterModel.getInteger("level") - 1); // Шаг между уровнями
         int newColor = (oldColor + step / 2) / step * step; // С округлением
 
         int error = oldColor - newColor;
