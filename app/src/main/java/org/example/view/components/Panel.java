@@ -9,12 +9,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Panel extends JPanel implements Observer {
-    private Dimension panelSize;
-    private Dimension previousPanelSize;
-    private Dimension imSize = null;
+    private Dimension panelSize; // изменённый размер изображения
+    private Dimension previousPanelSize = null;
+    private Dimension previousImgSize;// для того чтобы при обновлении картинки тогоже размера ничего не съезжало
+    private Dimension imSize = null;//реальный размер изображения
     private BufferedImage img;
     BufferedImage scaledImage;
     private boolean isFullScreen = false;
+
+    private boolean reDraw = false;
 
     public Panel() {
         super();
@@ -36,8 +39,14 @@ public class Panel extends JPanel implements Observer {
         if (repaintEvent.image != null) {
             this.img = repaintEvent.image;
             imSize = new Dimension(img.getWidth(), img.getHeight());
-          
-            panelSize = new Dimension(imSize);
+            if(previousImgSize == null || (previousImgSize.width !=  imSize.width
+                    && previousImgSize.height !=  imSize.height)) {
+                panelSize = new Dimension(imSize);
+                previousImgSize = new Dimension(imSize);
+            }
+
+            //требуется перерисовка
+            reDraw = true;
 
             setPreferredSize(panelSize);
         }
@@ -126,33 +135,48 @@ public class Panel extends JPanel implements Observer {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (img != null) {
+        if (img == null) {
+            return;
+        }
 
-            if (previousPanelSize == null){
-                previousPanelSize = new Dimension(imSize);
-            }
+        if (previousPanelSize == null){
+            previousPanelSize = new Dimension(imSize);
+        }
 
-            if (panelSize.width == imSize.width && panelSize.height == imSize.height){
+        //можно значительно успростить и использовать для режима режима (не fullScreen)
+        // припомощи g.drawImage(img, 0, 0, getWidth(), getHeight(), this);, не используя инерполяцию, но приэтом картинка
+        // при ордер дизеринге осветляется(необяснимо но факт)
+        if(!isFullScreen) {
+            //если не фул скрин у нас два выхода
+            if (panelSize.width == imSize.width && panelSize.height == imSize.height) {
                 g.drawImage(img, 0, 0, this);
             } else {
-                if(panelSize.width == previousPanelSize.width ||
-                        panelSize.height == previousPanelSize.height) {
+                //прийдётся ли перерисовывать картинку или можно оставить прошлый вариант
+                if (!reDraw && (panelSize.width == previousPanelSize.width ||
+                        panelSize.height == previousPanelSize.height)) {
                     g.drawImage(scaledImage, 0, 0, this);
-                }
-                else {
+                } else {
+                    //применение инерполяции в случае измененя размера панели или reDraw
                     drawInterpolatedImage(g);
                     previousPanelSize = new Dimension(panelSize);
+                    reDraw = false;
                 }
             }
-
-            Graphics2D g2d = (Graphics2D) g.create();
-            float[] dash = {10, 5};
-            BasicStroke dashedStroke = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dash, 0);
-            g2d.setStroke(dashedStroke);
-            g2d.setColor(Color.RED);
-            g2d.drawRect(1, 1, panelSize.width - 1, panelSize.height - 1);
-            g2d.dispose();
         }
+        else {
+            //применение инерполяции в случае измененя размера окна в fullScreen
+            drawInterpolatedImage(g);
+            previousPanelSize = new Dimension(panelSize);
+            //можно использовать другую интерполяцию для fullScreen
+        }
+
+        Graphics2D g2d = (Graphics2D) g.create();
+        float[] dash = {10, 5};
+        BasicStroke dashedStroke = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dash, 0);
+        g2d.setStroke(dashedStroke);
+        g2d.setColor(Color.RED);
+        g2d.drawRect(1, 1, panelSize.width - 1, panelSize.height - 1);
+        g2d.dispose();
     }
 
     private void drawInterpolatedImage(Graphics g) {

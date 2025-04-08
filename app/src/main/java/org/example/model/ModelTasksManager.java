@@ -1,18 +1,14 @@
 package org.example.model;
 
+import org.example.event.RepaintEvent;
 import org.example.model.filters.FilterPrototype;
-import org.example.model.tasks.ApplyTask;
-import org.example.model.tasks.LoadTask;
-import org.example.model.tasks.SaveTask;
-import org.example.model.tasks.FullScreenTask;
-import org.example.model.tasks.Task;
+import org.example.model.tasks.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// задел под ассинхронность (тред пул)
 public class ModelTasksManager {
     private static final List<Task> taskList = new ArrayList<>();
     private static ImageWorker imageWorker;
@@ -45,23 +41,37 @@ public class ModelTasksManager {
     public static int run() {
         Task currTask = taskList.getFirst();
 
-        taskList.removeLast();
+        taskList.removeLast(); // FIX THIS!!!
+      
+        switch (currTask) {
+            case LoadTask loadTask ->
+                    imageWorker.load(loadTask.imagePath, loadTask.imageName);
 
-        if (currTask instanceof LoadTask loadTask) {
-            imageWorker.load(loadTask.imagePath, loadTask.imageName);
-        } else if (currTask instanceof SaveTask saveTask) {
-            imageWorker.save(saveTask.imagePath, saveTask.imageName);
-        } else if (currTask instanceof ApplyTask applyTask) {
-            if (imageWorker.getLoadedImage() == null || imageWorker.getFilteredImage() == null) {
-                System.err.println("Image is null");
-                return -1;
-            } else if (!filters.containsKey(applyTask.filterName)) {
-                System.err.println("Filter not chosen");
-                return -1;
+            case SaveTask saveTask ->
+                    imageWorker.save(saveTask.imagePath, saveTask.imageName);
+
+            case ApplyTask applyTask -> {
+                    if (imageWorker.getLoadedImage() == null || imageWorker.getFilteredImage() == null) {
+                        System.err.println("Image is null");
+                        return -1;
+                    } else if (!filters.containsKey(applyTask.filterName)) {
+                        System.err.println("Filter not chosen");
+                        return -1;
+                    }
+                    filters.get(applyTask.filterName).convert(
+                            imageWorker.getLoadedImage(),
+                            imageWorker.getFilteredImage()
+                    );
             }
-            filters.get(applyTask.filterName).convert(imageWorker.getLoadedImage(), imageWorker.getFilteredImage());
-        } else if (currTask instanceof FullScreenTask fullScreenTask) {
-            model.imgToFullScreen();
+
+            case FullScreenTask fullScreenTask ->
+                    model.imgToFullScreen();
+
+            case ReturnToOriginalImgTask returnToOriginalImgTask ->
+                    model.update(new RepaintEvent(imageWorker.getLoadedImage()));
+
+            default ->
+                    throw new IllegalArgumentException("Unknown task type: " + currTask.getClass());
         }
 
         return 0;

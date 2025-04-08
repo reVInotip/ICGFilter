@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 @Filter(descr = "Гауссово размытие", icon = "/utils/gaussian.png")
 public class GaussianBlur extends FilterPrototype {
-    private final Map<Integer, double[]> kernelCache = new HashMap<>();
-    private final ExecutorService executor = Executors.newFixedThreadPool(3);
+    private Map<Integer, double[]> kernelCache = null;
+    private ExecutorService executor = null;
 
     public GaussianBlur(ModelPrototype filterModel) {
         super(filterModel);
@@ -23,6 +23,8 @@ public class GaussianBlur extends FilterPrototype {
 
     @Override
     public void convert(BufferedImage image, BufferedImage result) {
+        kernelCache = new HashMap<>();
+        executor = Executors.newFixedThreadPool(3);
         if (image == null) {
             throw new IllegalArgumentException("Image cannot be null");
         }

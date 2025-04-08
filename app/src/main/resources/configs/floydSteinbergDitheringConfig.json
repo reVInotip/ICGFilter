@@ -2,9 +2,19 @@
 	"filterPath": "org.example.model.filters.filters.FloydSteinbergDithering",
 	"dialogWindowExist": true,
 	"filterParams": [{
-		"name": "level",
+		"name": "red level",
 		"type": "int",
-		"max": 20,
+		"max": 100,
+		"min": 2
+	},{
+		"name": "green level",
+		"type": "int",
+		"max": 100,
+		"min": 2
+	},{
+		"name": "blue level",
+		"type": "int",
+		"max": 100,
 		"min": 2
 	}]
 }

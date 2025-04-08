@@ -4,13 +4,11 @@ import dto.FilterDto;
 import org.example.event.Event;
 import org.example.event.StartEvent;
 import org.example.event.observers.Observer;
+
 import org.example.model.MainModel;
 import org.example.model.ModelTasksManager;
 import org.example.model.filters.filterModels.ModelPrototype;
-import org.example.model.tasks.ApplyTask;
-import org.example.model.tasks.FullScreenTask;
-import org.example.model.tasks.LoadTask;
-import org.example.model.tasks.SaveTask;
+import org.example.model.tasks.*;
 import org.example.view.components.CursorManager;
 import org.example.view.components.Frame;
 
@@ -80,16 +78,23 @@ public class MainFrame extends Frame implements Observer {
     }
 
     private void fullScreenButton(ActionListener loadListener) {
-        addToolbarButton("fullScreen", "Открывает изображение", "/utils/fullScreen.png", loadListener);
+        addToolbarButton("fullScreen", "на весь экран", "/utils/fullScreen.png", loadListener);
+        addToolbarSeparator();
+    }
+
+    private void returnToOriginalButton(ActionListener loadListener) {
+        addToolbarButton("returnToOriginal", "возвращает изображение в огригинальный вид", "/utils/return.png", loadListener);
         addToolbarSeparator();
     }
 
     private void createToolbarButtons(ActionListener saveListener, ActionListener loadListener
-            , ActionListener applyListener, ActionListener fullScreenListener) {
+            , ActionListener applyListener, ActionListener fullScreenListener, ActionListener returnToOriginalListener) {
+        returnToOriginalButton(returnToOriginalListener);
         createSaveButton(saveListener);
         createLoadButton(loadListener);
         createApplyButton(applyListener);
         fullScreenButton(fullScreenListener);
+
     }
 
     private MainFrame(HashMap<String, FilterDto> filterDtos, HashMap<String, ModelPrototype> filterModels) {
@@ -128,11 +133,16 @@ public class MainFrame extends Frame implements Observer {
             }
         };
 
+        ActionListener returnToOriginalListener = action -> {
+            CursorManager.showWaitCursor();
+            ModelTasksManager.addTask(new ReturnToOriginalImgTask());
+        };
+
         ActionListener fullScreenListener = action -> {
             ModelTasksManager.addTask(new FullScreenTask());
         };
 
-        createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener);
+        createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener, returnToOriginalListener);
 
         addMenuItem("File", "Save", saveListener);
         addMenuItem("File", "Open", loadListener);

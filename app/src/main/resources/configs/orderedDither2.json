@@ -1,0 +1,23 @@
+{
+	"filterPath": "org.example.model.filters.filters.OrderedDither2",
+	"dialogWindowExist": true,
+	"filterParams": [{
+			"name": "red level",
+			"type": "int",
+			"max": 128,
+			"min": 2
+		},
+		{
+			"name": "green level",
+			"type": "int",
+			"max": 128,
+			"min": 2
+		},
+		{
+			"name": "blue level",
+			"type": "int",
+			"max": 128,
+			"min": 2
+		}
+	]
+}
