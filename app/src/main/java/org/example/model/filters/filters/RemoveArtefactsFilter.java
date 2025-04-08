@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@Filter(descr = "Удаление артефактов", icon = "")
+@Filter(descr = "Удаление артефактов", icon = "/utils/removeArtefacts.png")
 public class RemoveArtefactsFilter extends FilterPrototype {
     private final HashMap<Integer, Integer> colorsHashMap = new HashMap<>();
 

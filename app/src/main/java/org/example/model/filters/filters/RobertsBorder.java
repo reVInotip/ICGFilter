@@ -7,7 +7,7 @@ import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
 
-@Filter(descr = "Выделение границ (Робертс)", icon = "")
+@Filter(descr = "Выделение границ (Робертс)", icon = "/utils/borders.png")
 public class RobertsBorder extends FilterPrototype {
     final private int[] robertsX = {
             1, 0,

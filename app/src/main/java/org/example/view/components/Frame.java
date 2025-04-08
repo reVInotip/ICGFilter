@@ -143,7 +143,7 @@ public class Frame extends JFrame {
         ButtonGroup menuButtonGroup = new ButtonGroup();
 
         for (String tool: items) {
-            JRadioButton button = new JRadioButton(tool);
+            JRadioButton button = new JRadioButton();
             if (toolsDescr.containsKey(tool)) {
                 button.setToolTipText(toolsDescr.get(tool));
             }
@@ -153,11 +153,13 @@ public class Frame extends JFrame {
                     ImageIcon icon = new ImageIcon(
                             Frame.class.getResource(icons.get(tool))
                     );
-                    Image image = icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+                    Image image = icon.getImage().getScaledInstance(18, 18, Image.SCALE_SMOOTH);
                     button.setIcon(new ImageIcon(image));
                 } catch (NullPointerException e) {
                     System.err.println("Can not load icon for tool: " + tool + " because " + e.getMessage());
                 }
+            } else {
+                button.setText(tool);
             }
 
             toolBar.add(button);

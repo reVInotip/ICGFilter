@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICG Filter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .program-description {
+            background-color: white;
+            border-radius: 8px;
+            padding: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+        .filters-list {
+            columns: 2;
+            column-gap: 10px;
+            margin: 10px 0;
+        }
+        .filters-list li {
+            margin-bottom: 8px;
+            break-inside: avoid;
+        }
+        .features {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .authors {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .author {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .highlight {
+            color: #3498db;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<h1>ICG Filter</h1>
+
+<div class="program-description">
+    <p>Данная программа предназначена для применения различных фильтров к изображениям.</p>
+
+    <div class="features">
+        <p><span class="highlight">Основные возможности:</span></p>
+        <ul class="filters-list">
+            <li>Гамма-коррекция</li>
+            <li>Чёрно-белый фильтр</li>
+            <li>Инверсия цвета</li>
+            <li>Фильтры выделения границ</li>
+            <li>Фильтр удаления артефактов</li>
+            <li>Фильтр установки источника света</li>
+            <li>Размытие по Гауссу</li>
+            <li>Упорядоченный дизеринг и дизеринг Флойда-Стенберга</li>
+            <li>Фильтр резкости</li>
+            <li>Акварельный фильтр</li>
+            <li>Фильтр с произвольной матрицей</li>
+        </ul>
+    </div>
+
+    <p>Задание параметров фильтров производится в интуитивно понятном диалоговом окне. Все фильтры:</p>
+    <ul>
+        <li>Дублированы в меню для удобства доступа</li>
+        <li>Снабжены всплывающими подсказками</li>
+    </ul>
+
+    <p>Дополнительные функции:</p>
+    <ul>
+        <li>Возможность переключения между исходным и отфильтрованным изображением</li>
+        <li>Автоматическая подгонка изображения под размер экрана</li>
+    </ul>
+</div>
+
+<div class="authors">
+    <h3>Разработчики:</h3>
+    <div class="author">
+        <span>Новиков Григорий Андреевич</span>
+        <span>студент 3 курса ФИТ НГУ группы 22207</span>
+    </div>
+    <div class="author">
+        <span>Стубарев Дмитрий Денисович</span>
+        <span>студент 3 курса ФИТ НГУ группы 22207</span>
+    </div>
+</div>
+</body>
+</html>
