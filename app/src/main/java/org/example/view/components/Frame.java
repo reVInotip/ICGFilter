@@ -3,7 +3,6 @@ package org.example.view.components;
 import dto.FilterDto;
 import org.example.model.filters.filterModels.ModelPrototype;
 import org.example.view.components.filterDialogs.DialogPrototype;
-import org.example.view.components.DialogsFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +12,7 @@ import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Frame extends JFrame {
     private static final String WINDOW_NAME = "ICG Filter";
@@ -169,37 +169,41 @@ public class Frame extends JFrame {
             menuButton.addActionListener(actionEvent -> {
                 if (!isClicked[0]) {
                     isClicked[0] = true;
-                    //toolbarButtonGroup.setSelected(button.getModel(), true);
-                    button.doClick();
-                } else {
-                    isClicked[0] = false;
-                    isClicked[1] = false;
+
+                    if (isClicked[1]) {
+                        isClicked[0] = false;
+                        isClicked[1] = false;
+                    } else {
+                        button.doClick();
+                    }
                 }
             });
+
             button.addActionListener(actionEvent -> {
                 if (!isClicked[1]) {
                     toolbarButtonGroup.getElements().asIterator().forEachRemaining(b -> b.setBorderPainted(false));
                     button.setBorderPainted(true);
                     isClicked[1] = true;
-                    //menuButtonGroup.setSelected(menuButton.getModel(), true);
-                    menuButton.doClick();
-                } else {
-                    isClicked[0] = false;
-                    isClicked[1] = false;
+
+                    if (isClicked[0]) {
+                        isClicked[0] = false;
+                        isClicked[1] = false;
+                    } else {
+                        menuButton.doClick();
+                    }
                 }
             });
 
             if (dialogWindows.containsKey(tool)) {
                 ItemListener setVisibleListener = itemEvent -> {
-                    if (itemEvent.getStateChange() == ItemEvent.SELECTED && (isClicked[0] || isClicked[1])) {
-                        dialogWindows.get(tool).setVisible(true);
-                        //menuButtonGroup.clearSelection();
-                        //toolbarButtonGroup.clearSelection();
-                    }
+                        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                            dialogWindows.get(tool).setVisible(true);
+                            //menuButtonGroup.clearSelection();
+                            toolbarButtonGroup.clearSelection();
+                        }
                 };
 
                 button.addItemListener(setVisibleListener);
-                menuButton.addItemListener(setVisibleListener);
             }
 
             menuButtonGroup.add(menuButton);

@@ -80,18 +80,24 @@ public class MainFrame extends Frame implements Observer {
     }
 
     private void returnToOriginalButton(ActionListener loadListener) {
-        addToolbarButton("returnToOriginal", "возвращает изображение в огригинальный вид", "/utils/return.png", loadListener);
+        addToolbarButton("returnToOriginal", "возвращает изображение в оригинальный вид", "/utils/return_original.png", loadListener);
+        addToolbarSeparator();
+    }
+
+    private void returnToFilteredButton(ActionListener loadListener) {
+        addToolbarButton("returnToFiltered", "возвращает изображение, к которому применён фильтр", "/utils/return_filtered.png", loadListener);
         addToolbarSeparator();
     }
 
     private void createToolbarButtons(ActionListener saveListener, ActionListener loadListener
-            , ActionListener applyListener, ActionListener fullScreenListener, ActionListener returnToOriginalListener) {
-        returnToOriginalButton(returnToOriginalListener);
+            , ActionListener applyListener, ActionListener fullScreenListener, ActionListener returnToOriginalListener,
+                                      ActionListener returnToFilteredListener) {
         createSaveButton(saveListener);
         createLoadButton(loadListener);
         createApplyButton(applyListener);
         fullScreenButton(fullScreenListener);
-
+        returnToOriginalButton(returnToOriginalListener);
+        returnToFilteredButton(returnToFilteredListener);
     }
 
     private MainFrame(HashMap<String, FilterDto> filterDtos, HashMap<String, ModelPrototype> filterModels) {
@@ -135,6 +141,11 @@ public class MainFrame extends Frame implements Observer {
             ModelTasksManager.addTask(new ReturnToOriginalImgTask());
         };
 
+        ActionListener returnToFilteredListener = action -> {
+            CursorManager.showWaitCursor();
+            ModelTasksManager.addTask(new ReturnToFilteredImgTask());
+        };
+
         ActionListener fullScreenListener = action -> {
             ModelTasksManager.addTask(new FullScreenTask());
         };
@@ -145,7 +156,7 @@ public class MainFrame extends Frame implements Observer {
 
         ActionListener setNearestNeighbourInterpolation = actionEvent -> panel.interpolationType = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
 
-        createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener, returnToOriginalListener);
+        createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener, returnToOriginalListener, returnToFilteredListener);
 
         addMenuItem("File", "Save", saveListener);
         addMenuItem("File", "Open", loadListener);
