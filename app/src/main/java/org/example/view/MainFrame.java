@@ -123,7 +123,9 @@ public class MainFrame extends Frame implements Observer {
 
         ActionListener applyListener = action -> {
             CursorManager.showWaitCursor();
-            ModelTasksManager.addTask(new ApplyTask(MainModel.getSelectedFilter()));
+            if (ModelTasksManager.addTask(new ApplyTask(MainModel.getSelectedFilter())) < 0) {
+                CursorManager.defaultCursor();
+            }
         };
 
         ActionListener fullScreenListener = action -> {
