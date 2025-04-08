@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// задел под ассинхронность (тред пул)
 public class ModelTasksManager {
     private static final List<Task> taskList = new ArrayList<>();
     private static ImageWorker imageWorker;
@@ -34,16 +33,16 @@ public class ModelTasksManager {
 
     }
 
-    public static void addTask(Task task) {
+    public static int addTask(Task task) {
         taskList.add(task);
-        run();
+        return run();
     }
 
-    public static void run() {
+    public static int run() {
         Task currTask = taskList.getFirst();
 
-        taskList.removeLast();
-
+        taskList.removeLast(); // FIX THIS!!!
+      
         switch (currTask) {
             case LoadTask loadTask ->
                     imageWorker.load(loadTask.imagePath, loadTask.imageName);
@@ -51,11 +50,19 @@ public class ModelTasksManager {
             case SaveTask saveTask ->
                     imageWorker.save(saveTask.imagePath, saveTask.imageName);
 
-            case ApplyTask applyTask ->
+            case ApplyTask applyTask -> {
+                    if (imageWorker.getLoadedImage() == null || imageWorker.getFilteredImage() == null) {
+                        System.err.println("Image is null");
+                        return -1;
+                    } else if (!filters.containsKey(applyTask.filterName)) {
+                        System.err.println("Filter not chosen");
+                        return -1;
+                    }
                     filters.get(applyTask.filterName).convert(
                             imageWorker.getLoadedImage(),
                             imageWorker.getFilteredImage()
                     );
+            }
 
             case FullScreenTask fullScreenTask ->
                     model.imgToFullScreen();
@@ -66,6 +73,8 @@ public class ModelTasksManager {
             default ->
                     throw new IllegalArgumentException("Unknown task type: " + currTask.getClass());
         }
+
+        return 0;
     }
 
 }

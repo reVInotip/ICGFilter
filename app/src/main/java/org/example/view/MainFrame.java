@@ -12,10 +12,13 @@ import org.example.model.tasks.*;
 import org.example.view.components.CursorManager;
 import org.example.view.components.Frame;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +36,29 @@ public class MainFrame extends Frame implements Observer {
         }
 
         return null;
+    }
+
+    private void addAboutSubmenu() {
+        String descr = "nothing there";
+        try (InputStream fileStream = MainFrame.class.getResourceAsStream("/description.html")) {
+            if (fileStream == null) {
+                java.lang.System.err.println("Description file not found!");
+                throw new IOException();
+            }
+
+            descr = new String(fileStream.readAllBytes());
+        } catch (Exception e) {
+            java.lang.System.err.println("Can not add description for About menu item: " + e.getMessage());
+        }
+
+        JEditorPane editorPane = new JEditorPane("text/html", descr);
+        editorPane.setEditable(false);
+        editorPane.setOpaque(true);
+        editorPane.setBackground(new Color(240, 240, 240));
+        addMenuItem("Help", "About", actionEvent -> {
+            JOptionPane.showMessageDialog(MainFrame.this,
+                    editorPane, "О программе", JOptionPane.INFORMATION_MESSAGE);
+        });
     }
 
     private void createSaveButton(ActionListener saveListener) {
@@ -102,7 +128,9 @@ public class MainFrame extends Frame implements Observer {
 
         ActionListener applyListener = action -> {
             CursorManager.showWaitCursor();
-            ModelTasksManager.addTask(new ApplyTask(MainModel.getSelectedFilter()));
+            if (ModelTasksManager.addTask(new ApplyTask(MainModel.getSelectedFilter())) < 0) {
+                CursorManager.defaultCursor();
+            }
         };
 
         ActionListener returnToOriginalListener = action -> {
@@ -115,6 +143,11 @@ public class MainFrame extends Frame implements Observer {
         };
 
         createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener, returnToOriginalListener);
+
+        addMenuItem("File", "Save", saveListener);
+        addMenuItem("File", "Open", loadListener);
+        addMenuItem("Modify", "Apply selected filter", applyListener);
+        addAboutSubmenu();
     }
 
     public List<Observer> getInternalObservers() {

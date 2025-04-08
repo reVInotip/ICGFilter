@@ -10,7 +10,7 @@ import org.example.model.filters.filterModels.customTypes.Matrix;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-@Filter(descr = "Произвольный свёрточный фильтр", icon = "")
+@Filter(descr = "Произвольный свёрточный фильтр", icon = "/utils/expert.png")
 public class ExpertFilter extends FilterPrototype {
     static private final int[] embossMatrix = {
             -2, -1, 0,

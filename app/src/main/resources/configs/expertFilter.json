@@ -9,12 +9,12 @@
   },{
     "name": "kernel",
     "type": "matrix",
-    "max": 100,
+    "max": 12,
     "min": 1
   },{
     "name": "divider",
     "type": "int",
-    "max": 300,
+    "max": 144,
     "min": 1,
     "step": 1
   }]
