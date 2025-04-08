@@ -167,6 +167,7 @@ public class Frame extends JFrame {
             menuButton.addActionListener(actionEvent -> {
                 if (!isClicked[0]) {
                     isClicked[0] = true;
+                    //toolbarButtonGroup.setSelected(button.getModel(), true);
                     button.doClick();
                 } else {
                     isClicked[0] = false;
@@ -178,6 +179,7 @@ public class Frame extends JFrame {
                     toolbarButtonGroup.getElements().asIterator().forEachRemaining(b -> b.setBorderPainted(false));
                     button.setBorderPainted(true);
                     isClicked[1] = true;
+                    //menuButtonGroup.setSelected(menuButton.getModel(), true);
                     menuButton.doClick();
                 } else {
                     isClicked[0] = false;
@@ -187,10 +189,10 @@ public class Frame extends JFrame {
 
             if (dialogWindows.containsKey(tool)) {
                 ItemListener setVisibleListener = itemEvent -> {
-                    if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                    if (itemEvent.getStateChange() == ItemEvent.SELECTED && (isClicked[0] || isClicked[1])) {
                         dialogWindows.get(tool).setVisible(true);
-                        menuButtonGroup.clearSelection();
-                        toolbarButtonGroup.clearSelection();
+                        //menuButtonGroup.clearSelection();
+                        //toolbarButtonGroup.clearSelection();
                     }
                 };
 
