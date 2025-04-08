@@ -44,8 +44,8 @@ public class ModelPrototype extends FilterModelObservable {
                 runtimeParameters.put(name, new Parameter(
                         type,
                         data,
-                        (int) minorParams.get(1),
-                        (int) minorParams.get(1),
+                        ((Integer) minorParams.get(1)).doubleValue(),
+                        ((Integer) minorParams.get(1)).doubleValue(),
                         null,
                         null)
                 );
@@ -70,23 +70,33 @@ public class ModelPrototype extends FilterModelObservable {
         }
 
         switch (type) {
-            case INTEGER, DOUBLE -> {
+            case INTEGER -> {
                 parameters.put(name, new Parameter(
                         type,
-                        minorParams.getFirst(),
-                        (int) minorParams.get(1),
-                        (int) minorParams.getFirst(),
+                        ((Double) minorParams.getFirst()).intValue(),
+                        (double) minorParams.get(1),
+                        (double) minorParams.getFirst(),
+                        (Integer) minorParams.get(2), //step may be null,
+                        null)
+                );
+            }
+            case DOUBLE -> {
+                parameters.put(name, new Parameter(
+                        type,
+                        (Double) minorParams.getFirst(),
+                        (double) minorParams.get(1),
+                        (double) minorParams.getFirst(),
                         (Integer) minorParams.get(2), //step may be null,
                         null)
                 );
             }
             case MATRIX -> {
-                var data = new Matrix((int) minorParams.getFirst(), (int) minorParams.getFirst());
+                var data = new Matrix(((Double) minorParams.getFirst()).intValue(), ((Double) minorParams.getFirst()).intValue());
                 parameters.put(name, new Parameter(
                         type,
                         data,
-                        (int) minorParams.get(1),
-                        (int) minorParams.getFirst(),
+                        (double) minorParams.get(1),
+                        (double) minorParams.getFirst(),
                         null,
                         null)
                 );
@@ -97,8 +107,8 @@ public class ModelPrototype extends FilterModelObservable {
                     parameters.put(name, new Parameter(
                             type,
                             (List<String>) elements,
-                            0,
-                            elements.size(),
+                            0.0,
+                            ((Integer)elements.size()).doubleValue(),
                             null,
                             (List<String>) link
                     ));
@@ -113,8 +123,8 @@ public class ModelPrototype extends FilterModelObservable {
                     parameters.put(name, new Parameter(
                             type,
                             matrixData,
-                            max,
-                            min,
+                            (double) max,
+                            (double) min,
                             null,
                             null)
                     );
@@ -156,6 +166,16 @@ public class ModelPrototype extends FilterModelObservable {
         parameters.get(name).index = index;
     }
 
+    public String checkListIndex(String name, int index) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.LIST)) {
+            return "Parameter doesn't exists or it's type is not list";
+        } else if (index < parameters.get(name).min || index > parameters.get(name).max) {
+            return "List index should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
+    }
+
     public String getListElement(String name) {
         if (parameters.containsKey(name) && (parameters.get(name).type == FieldType.LIST)) {
             return ((List<String>) parameters.get(name).parameter).get(parameters.get(name).index);
@@ -172,6 +192,16 @@ public class ModelPrototype extends FilterModelObservable {
         }
 
         parameters.get(name).parameter = value;
+    }
+
+    public String checkInteger(String name, int value) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.INTEGER)) {
+            return "Parameter doesn't exists or it's type is not integer";
+        } else if (value < parameters.get(name).min || value > parameters.get(name).max) {
+            return "Value should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
     }
 
     public void setMatrix(String name, int x, int y, int value) {
@@ -235,6 +265,16 @@ public class ModelPrototype extends FilterModelObservable {
         }
     }
 
+    public String checkMatrixSize(String name, int size) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.MATRIX_DATA && parameters.get(name).type != FieldType.MATRIX)) {
+            return "Parameter doesn't exists or it's type is not matrix data";
+        } else if (size < parameters.get(name).min || size > parameters.get(name).max) {
+            return "Matrix size should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
+    }
+
     public String getName() {
         return name;
     }
@@ -245,5 +285,15 @@ public class ModelPrototype extends FilterModelObservable {
             throw new RuntimeException("Invalid parameter");
         }
         parameters.get(paramName).parameter = value;
+    }
+
+    public String checkDouble(String name, double value) {
+        if (!parameters.containsKey(name) || (parameters.get(name).type != FieldType.DOUBLE)) {
+            return "Parameter doesn't exists or it's type is not double";
+        } else if (value < parameters.get(name).min || value > parameters.get(name).max) {
+            return "Value should by in bounds: " + parameters.get(name).min + " - " + parameters.get(name).max;
+        }
+
+        return null;
     }
 }

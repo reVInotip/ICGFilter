@@ -7,7 +7,7 @@ import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
 
-@Filter(descr = "Выделение границ (Собель)", icon = "")
+@Filter(descr = "Выделение границ (Собель)", icon = "/utils/borders.png")
 public class SobelBorder extends FilterPrototype {
     final private int[] sobelX = {
             -1, 0, 1,

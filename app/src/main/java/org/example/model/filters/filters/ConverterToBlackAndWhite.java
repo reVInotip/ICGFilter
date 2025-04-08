@@ -28,7 +28,7 @@ public class ConverterToBlackAndWhite extends FilterPrototype {
         int r1 = color >> 16 & 255;
         int g1 = color >> 8 & 255;
         int b1 = color & 255;
-        int average = (r1 + g1 + b1) / 3;
-        return 255 << 24 | average << 16 | average << 8 | average;
+        int average = (int) Math.round(0.299 * r1 + 0.587 * g1 + 0.114 * b1);
+        return a1 << 24 | average << 16 | average << 8 | average;
     }
 }

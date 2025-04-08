@@ -9,7 +9,11 @@ import org.example.model.filters.filterModels.events.UpdateMatrixEvent;
 import org.example.utils.Pair;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.event.*;
+import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,9 +24,74 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
     private final ModelPrototype model;
     private final GridBagConstraints gbc;
     private final JButton apply;
+    private final JButton exit;
     private final HashMap<String, List<Object>> updatedElements = new HashMap<>();
+    private final JPanel paramsPanel;
 
     private final int SCALE = 100;
+
+    public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
+        super(parent, "Settings for: " + name, true);
+        this.model = model;
+
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(Color.GRAY);
+        headerPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+
+        exit = new JButton("Exit");
+        exit.setBackground(Color.DARK_GRAY);
+        exit.setForeground(Color.WHITE);
+        exit.addActionListener(e -> DialogPrototype.this.setVisible(false));
+        headerPanel.add(exit, BorderLayout.NORTH);
+
+        JLabel header = new JLabel("Settings for: " + name);
+        header.setForeground(Color.WHITE);
+        headerPanel.add(header, BorderLayout.NORTH);
+
+        apply = new JButton("Apply");
+        apply.setBackground(Color.DARK_GRAY);
+        apply.setForeground(new Color(5, 255, 144));
+        apply.addActionListener(actionEvent -> DialogPrototype.this.setVisible(false));
+        headerPanel.add(apply, BorderLayout.NORTH);
+
+        System.out.println("Label " + header.getMinimumSize() + " apply " + apply.getWidth() + " exit " + exit.getWidth());
+
+        paramsPanel = new JPanel(new GridBagLayout());
+        paramsPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5); // Отступы между компонентами
+
+        int y = 0;
+        for (Map.Entry<String, FilterParam> dialogElement: dialogElements.entrySet()) {
+            y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
+        }
+
+        paramsPanel.setPreferredSize(new Dimension(300, 300));
+
+        add(paramsPanel, BorderLayout.CENTER);
+        add(headerPanel, BorderLayout.NORTH);
+
+        int width = Math.max(
+                headerPanel.getMinimumSize().width,
+                paramsPanel.getMinimumSize().width
+        );
+
+        int height = headerPanel.getMinimumSize().height + paramsPanel.getMinimumSize().height + 30;
+
+        setMinimumSize(new Dimension(width, height));
+        setLocationRelativeTo(parent);
+        setResizable(false);
+
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);  // Запрещает закрытие через крестик
+        setUndecorated(true);  // Убирает всю рамку (включая заголовок и кнопки)
+
+        model.add(this);
+    }
+
+    private void showErrorDialog(String text) {
+        JOptionPane.showMessageDialog(this, text, "Error",JOptionPane.ERROR_MESSAGE);
+    }
 
     private int addIntegerElement(JPanel panel, String paramName, int max, int min, Integer step, int y) {
         final JSpinner elementSpinner = new JSpinner(new SpinnerNumberModel(min, min, max, step == null ? 1 : step));
@@ -34,6 +103,25 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             elementSpinner.setValue(value);
         });
 
+        ((JSpinner.DefaultEditor)elementSpinner.getEditor()).getTextField().addFocusListener( new FocusAdapter()
+        {
+            public void focusGained(FocusEvent e) {}
+
+            public void focusLost(FocusEvent e)
+            {
+                JTextField textField = (JTextField)e.getSource();
+                try {
+                    int value = Integer.parseInt(textField.getText());
+                    String text = model.checkInteger(paramName, value);
+                    if (text != null) {
+                        showErrorDialog(text);
+                    }
+                } catch (Exception er) {
+                    showErrorDialog("Incorrect input! Only numbers");
+                }
+            }
+        });
+
         elementSpinner.addChangeListener(changeEvent -> {
             int value = Integer.parseInt(String.valueOf(elementSpinner.getValue()));
             elementSlider.setValue(value);
@@ -42,6 +130,12 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         apply.addActionListener(actionEvent -> {
             int value = elementSlider.getValue();
             model.setInteger(paramName, value);
+        });
+
+        exit.addActionListener(actionEvent -> {
+            int value = model.getInteger(paramName);
+            elementSlider.setValue(value);
+            elementSpinner.setValue(value);
         });
 
         gbc.gridx = 0;
@@ -69,6 +163,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
     }
 
     private int addDoubleElement(JPanel panel, String paramName, double max, double min, int y) {
+        System.out.println(min);
         final JTextField textField = new JTextField(5);
         textField.setFont(new Font("Arial", Font.PLAIN, 14));
 
@@ -81,20 +176,37 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
 
         final JLabel label = new JLabel(paramName);
 
-        textField.addActionListener(e -> {
-            try {
-                double value = Double.parseDouble(textField.getText());
-                slider.setValue((int)(value * SCALE));
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(panel,
-                        "Введите корректное значение",
-                        "Ошибка", JOptionPane.ERROR_MESSAGE);
+        textField.addActionListener(new ActionListener() {
+            private String previousText = textField.getText();
+
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    double value = Double.parseDouble(textField.getText());
+                    String message = model.checkDouble(paramName, value);
+                    if (message != null) {
+                        textField.setText(previousText);
+                        showErrorDialog(message);
+                    } else {
+                        previousText = textField.getText();
+                        slider.setValue((int)(value * SCALE));
+                    }
+                } catch (NumberFormatException ex) {
+                    showErrorDialog("Incorrect input! Only numbers");
+                    textField.setText(previousText);
+                }
             }
         });
 
         slider.addChangeListener(e -> {
             double value = slider.getValue() / (double)SCALE;
             textField.setText(String.valueOf(value));
+        });
+
+        exit.addActionListener(actionEvent -> {
+            double value = model.getDouble(paramName);
+            textField.setText(String.valueOf(value));
+            slider.setValue((int)(value * SCALE));
         });
 
         apply.addActionListener(actionEvent -> {
@@ -128,7 +240,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
 
     private int addMatrixDataElement(JPanel panel, String paramName, List<Integer> sizes, int y) {
         final JComboBox<Integer> sizeForRedChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
-        final JLabel labelForRedCh = new JLabel(paramName + " (красный канал)");
+        final JLabel labelForRedCh = new JLabel(paramName + " (red channel)");
 
         gbc.gridx = 0;
         gbc.gridy = y;
@@ -141,7 +253,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         panel.add(sizeForRedChannel, gbc);
 
         final JComboBox<Integer> sizeForBlueChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
-        final JLabel labelForBlueCh = new JLabel(paramName + " (синий канал)");
+        final JLabel labelForBlueCh = new JLabel(paramName + " (blue channel)");
 
         gbc.gridx = 0;
         gbc.gridy = y + 1;
@@ -154,7 +266,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         panel.add(sizeForBlueChannel, gbc);
 
         final JComboBox<Integer> sizeForGreenChannel = new JComboBox<>(sizes.toArray(new Integer[0]));
-        final JLabel labelForGreenCh = new JLabel(paramName + " (зелёный канал)");
+        final JLabel labelForGreenCh = new JLabel(paramName + " (green channel)");
 
         gbc.gridx = 0;
         gbc.gridy = y + 2;
@@ -175,6 +287,17 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
 
             int newSizeForRed = Integer.parseInt(sizeForRedChannel.getSelectedItem().toString());
             model.setMatrixData(paramName, newSizeForRed, "red");
+        });
+
+        exit.addActionListener(actionEvent -> {
+            int sizeR = model.getMatrixData("kernel size").getCurrSizeForRedChannel();
+            sizeForRedChannel.setSelectedItem(sizeR);
+
+            int sizeG = model.getMatrixData("kernel size").getCurrSizeForGreenChannel();
+            sizeForGreenChannel.setSelectedItem(sizeG);
+
+            int sizeB = model.getMatrixData("kernel size").getCurrSizeForBlueChannel();
+            sizeForBlueChannel.setSelectedItem(sizeB);
         });
 
         return y + 2;
@@ -198,6 +321,25 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             panel.revalidate();
         });
 
+        ((JSpinner.DefaultEditor)sizeSpinner.getEditor()).getTextField().addFocusListener( new FocusAdapter()
+        {
+            public void focusGained(FocusEvent e) {}
+
+            public void focusLost(FocusEvent e)
+            {
+                JTextField textField = (JTextField)e.getSource();
+                try {
+                    int value = Integer.parseInt(textField.getText());
+                    String text = model.checkMatrixSize(paramName, value);
+                    if (text != null) {
+                        showErrorDialog(text);
+                    }
+                } catch (Exception er) {
+                    showErrorDialog("Incorrect input! Only numbers");
+                }
+            }
+        });
+
         apply.addActionListener(actionEvent -> {
             int newSize = (int) sizeSpinner.getValue();
             model.getMatrix(paramName).resize(newSize, newSize);
@@ -210,12 +352,24 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
                         int value = Integer.parseInt(field.getText());
                         model.setMatrix(paramName, j, i, value);
                     } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(matrixPanel,
-                                "Введите целое число", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                        showErrorDialog("Incorrect input! Only numbers");
                     }
                 }
             }
         });
+
+        exit.addActionListener(actionEvent -> {
+            Matrix matrix1 = model.getMatrix(paramName);
+            int size = matrix1.getWidth();
+            sizeSpinner.setValue(size);
+
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    fields.get().get(i * size + j).setText(String.valueOf(matrix1.get(j, i)));
+                }
+            }
+        });
+
 
         gbc.gridx = 0;
         gbc.gridy = y;
@@ -230,7 +384,9 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         gbc.gridx = 0;
         gbc.gridy = y + 1;
         gbc.gridwidth = 2;
+        gbc.weightx = 1;
         panel.add(matrixPanel, gbc);
+        gbc.weightx = 0;
         gbc.gridwidth = 1;
 
         var ue = new ArrayList<>();
@@ -281,20 +437,67 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
     }
 
     private ArrayList<JTextField> updateMatrixPanel(JPanel matrixPanel, Matrix input, int size) {
+        int width = getMinimumSize().width - matrixPanel.getMinimumSize().width;
+        int height = getMinimumSize().height - matrixPanel.getMinimumSize().height;
+
+        int paramsWidth = paramsPanel.getMinimumSize().width - matrixPanel.getMinimumSize().width;
+        int paramsHeight = paramsPanel.getMinimumSize().height - matrixPanel.getMinimumSize().height;
+
         matrixPanel.setLayout(new GridLayout(0, size, 5, 5));
         matrixPanel.removeAll();
 
         ArrayList<JTextField> fields = new ArrayList<>();
+        int inputSize = input.getWidth();
         // Создаем текстовые поля для каждого элемента матрицы
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
                 JTextField field = new JTextField(3);
                 field.setHorizontalAlignment(JTextField.CENTER);
-                field.setText(String.valueOf(input.safetyGet(x, y)));
+                if (x < inputSize && y < inputSize) {
+                    field.setText(String.valueOf(input.safetyGet(x, y)));
+                } else {
+                    field.setText(String.valueOf(0));
+                }
+
+                field.addActionListener(new ActionListener() {
+                    private String previousText = field.getText();
+
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        try {
+                            Integer.parseInt(field.getText());
+                            previousText = field.getText();
+                        } catch (NumberFormatException ex) {
+                            showErrorDialog("Incorrect input! Only numbers");
+                            field.setText(previousText);
+                        }
+                    }
+                });
+
                 matrixPanel.add(field);
                 fields.add(field);
             }
         }
+
+        paramsPanel.setMinimumSize(new Dimension(
+                paramsWidth + matrixPanel.getMinimumSize().width,
+                paramsHeight + matrixPanel.getMinimumSize().height
+        ));
+
+        paramsPanel.setSize(new Dimension(
+                width + matrixPanel.getMinimumSize().width,
+                height + matrixPanel.getMinimumSize().height
+        ));
+
+        setMinimumSize(new Dimension(
+                width + matrixPanel.getMinimumSize().width,
+                height + matrixPanel.getMinimumSize().height
+        ));
+
+        setSize(new Dimension(
+                width + matrixPanel.getMinimumSize().width,
+                height + matrixPanel.getMinimumSize().height
+        ));
 
         return fields;
     }
@@ -303,13 +506,13 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
         if (element.isValid()) {
             switch (element.type) {
                 case INTEGER -> {
-                    return addIntegerElement(panel, element.name, element.max, element.min, element.step, y);
+                    return addIntegerElement(panel, element.name,element.max.intValue(), element.min.intValue(), element.step, y);
                 }
                 case DOUBLE -> {
                     return addDoubleElement(panel, element.name, element.max, element.min, y);
                 }
                 case MATRIX -> {
-                    return addMatrixElement(panel, element.name, element.max, element.min, y);
+                    return addMatrixElement(panel, element.name, element.max.intValue(), element.min.intValue(), y);
                 }
                 case LIST -> {
                     return addStringList(panel, element.name, element.elements, y);
@@ -320,38 +523,6 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             }
         }
         return y;
-    }
-
-    public DialogPrototype(JFrame parent, String name, HashMap<String, FilterParam> dialogElements, ModelPrototype model) {
-        super(parent, "Окно настроек для инструмента: " + name, true);
-        this.model = model;
-        apply = new JButton("Apply");
-
-        apply.setBackground(Color.GREEN);
-
-        apply.addActionListener(actionEvent -> {
-            DialogPrototype.this.setVisible(false);
-        });
-
-        JPanel paramsPanel = new JPanel(new GridBagLayout());
-        gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5); // Отступы между компонентами
-
-        int y = 0;
-        for (Map.Entry<String, FilterParam> dialogElement: dialogElements.entrySet()) {
-            y += addElement(paramsPanel, dialogElement.getValue(), y) + 1;
-        }
-
-        paramsPanel.setPreferredSize(new Dimension(300, 300));
-
-        add(new JScrollPane(paramsPanel), BorderLayout.CENTER);
-        add(apply, BorderLayout.SOUTH);
-
-        setMinimumSize(new Dimension(300, 300));
-        setLocationRelativeTo(parent);
-
-        model.add(this);
     }
 
     @Override
@@ -377,7 +548,7 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             int divider = data.second;
 
             dividerSlider.setValue(divider);
-           dividerSpinner.setValue(divider);
+            dividerSpinner.setValue(divider);
         }
     }
 }

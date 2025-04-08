@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Filter(descr = "Дизеринг", icon = "")
+@Filter(descr = "Упорядоченный дизеринг", icon = "/utils/orderedDither.png")
 public class OrderedDither extends FilterPrototype {
     final private List<Integer[]> matrices = new ArrayList<>();
     final private List<Integer> sizes = new ArrayList<>();

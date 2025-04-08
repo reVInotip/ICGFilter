@@ -7,15 +7,15 @@ import java.util.List;
 
 public class FilterParam {
     public FieldType type;
-    public Integer max;
-    public Integer min;
+    public Double max;
+    public Double min;
     public List<Integer> size;
     public Integer step;
     public String name;
     public List<String> elements;
     public List<String> link;
 
-    public FilterParam(String name, FieldType type, Integer max, Integer min, List<Integer> size, Integer step, List<String> elements, List<String> link) {
+    public FilterParam(String name, FieldType type, Double max, Double min, List<Integer> size, Integer step, List<String> elements, List<String> link) {
         this.type = type;
         this.max = max;
         this.min = min;

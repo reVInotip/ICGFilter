@@ -1,0 +1,10 @@
+{
+	"filterPath": "org.example.model.filters.filters.RemoveArtefactsFilter",
+	"dialogWindowExist": true,
+	"filterParams": [{
+		"name": "bound size",
+		"type": "int",
+		"max": 12,
+		"min": 2
+	}]
+}

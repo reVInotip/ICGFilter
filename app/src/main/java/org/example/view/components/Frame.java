@@ -143,7 +143,7 @@ public class Frame extends JFrame {
         ButtonGroup menuButtonGroup = new ButtonGroup();
 
         for (String tool: items) {
-            JRadioButton button = new JRadioButton(tool);
+            JRadioButton button = new JRadioButton();
             if (toolsDescr.containsKey(tool)) {
                 button.setToolTipText(toolsDescr.get(tool));
             }
@@ -153,11 +153,13 @@ public class Frame extends JFrame {
                     ImageIcon icon = new ImageIcon(
                             Frame.class.getResource(icons.get(tool))
                     );
-                    Image image = icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+                    Image image = icon.getImage().getScaledInstance(18, 18, Image.SCALE_SMOOTH);
                     button.setIcon(new ImageIcon(image));
                 } catch (NullPointerException e) {
                     System.err.println("Can not load icon for tool: " + tool + " because " + e.getMessage());
                 }
+            } else {
+                button.setText(tool);
             }
 
             toolBar.add(button);
@@ -167,6 +169,7 @@ public class Frame extends JFrame {
             menuButton.addActionListener(actionEvent -> {
                 if (!isClicked[0]) {
                     isClicked[0] = true;
+                    //toolbarButtonGroup.setSelected(button.getModel(), true);
                     button.doClick();
                 } else {
                     isClicked[0] = false;
@@ -178,6 +181,7 @@ public class Frame extends JFrame {
                     toolbarButtonGroup.getElements().asIterator().forEachRemaining(b -> b.setBorderPainted(false));
                     button.setBorderPainted(true);
                     isClicked[1] = true;
+                    //menuButtonGroup.setSelected(menuButton.getModel(), true);
                     menuButton.doClick();
                 } else {
                     isClicked[0] = false;
@@ -187,10 +191,10 @@ public class Frame extends JFrame {
 
             if (dialogWindows.containsKey(tool)) {
                 ItemListener setVisibleListener = itemEvent -> {
-                    if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                    if (itemEvent.getStateChange() == ItemEvent.SELECTED && (isClicked[0] || isClicked[1])) {
                         dialogWindows.get(tool).setVisible(true);
-                        menuButtonGroup.clearSelection();
-                        toolbarButtonGroup.clearSelection();
+                        //menuButtonGroup.clearSelection();
+                        //toolbarButtonGroup.clearSelection();
                     }
                 };
 

@@ -8,8 +8,8 @@ import java.util.List;
 public class DialogElement {
     private String name;
     private FieldType type;
-    private Integer max;
-    private Integer min;
+    private Double max;
+    private Double min;
     @JsonProperty("size")
     private List<Integer> size;
     private Integer step; //Integer, так как поле может отсутствовать
@@ -35,19 +35,19 @@ public class DialogElement {
         this.type = type;
     }
 
-    public Integer getMax() {
+    public Double getMax() {
         return max;
     }
 
-    public void setMax(int max) {
+    public void setMax(double max) {
         this.max = max;
     }
 
-    public Integer getMin() {
+    public Double getMin() {
         return min;
     }
 
-    public void setMin(int min) {
+    public void setMin(double min) {
         this.min = min;
     }
 
