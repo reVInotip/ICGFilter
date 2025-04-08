@@ -1,11 +1,8 @@
 package org.example.model;
 
+import org.example.event.RepaintEvent;
 import org.example.model.filters.FilterPrototype;
-import org.example.model.tasks.ApplyTask;
-import org.example.model.tasks.LoadTask;
-import org.example.model.tasks.SaveTask;
-import org.example.model.tasks.FullScreenTask;
-import org.example.model.tasks.Task;
+import org.example.model.tasks.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,14 +44,27 @@ public class ModelTasksManager {
 
         taskList.removeLast();
 
-        if (currTask instanceof LoadTask loadTask) {
-            imageWorker.load(loadTask.imagePath, loadTask.imageName);
-        } else if (currTask instanceof SaveTask saveTask) {
-            imageWorker.save(saveTask.imagePath, saveTask.imageName);
-        } else if (currTask instanceof ApplyTask applyTask) {
-            filters.get(applyTask.filterName).convert(imageWorker.getLoadedImage(), imageWorker.getFilteredImage());
-        } else if (currTask instanceof FullScreenTask fullScreenTask) {
-            model.imgToFullScreen();
+        switch (currTask) {
+            case LoadTask loadTask ->
+                    imageWorker.load(loadTask.imagePath, loadTask.imageName);
+
+            case SaveTask saveTask ->
+                    imageWorker.save(saveTask.imagePath, saveTask.imageName);
+
+            case ApplyTask applyTask ->
+                    filters.get(applyTask.filterName).convert(
+                            imageWorker.getLoadedImage(),
+                            imageWorker.getFilteredImage()
+                    );
+
+            case FullScreenTask fullScreenTask ->
+                    model.imgToFullScreen();
+
+            case ReturnToOriginalImgTask returnToOriginalImgTask ->
+                    model.update(new RepaintEvent(imageWorker.getLoadedImage()));
+
+            default ->
+                    throw new IllegalArgumentException("Unknown task type: " + currTask.getClass());
         }
     }
 

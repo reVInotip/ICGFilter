@@ -198,6 +198,8 @@ public class DialogPrototype extends JDialog implements FilterModelObserver {
             panel.revalidate();
         });
 
+
+
         apply.addActionListener(actionEvent -> {
             int newSize = (int) sizeSpinner.getValue();
             model.getMatrix(paramName).resize(newSize, newSize);

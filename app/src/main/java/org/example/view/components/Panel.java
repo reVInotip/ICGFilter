@@ -10,11 +10,14 @@ import java.awt.image.BufferedImage;
 
 public class Panel extends JPanel implements Observer {
     private Dimension panelSize; // изменённый размер изображения
-    private Dimension previousPanelSize;
+    private Dimension previousPanelSize = null;
+    private Dimension previousImgSize;// для того чтобы при обновлении картинки тогоже размера ничего не съезжало
     private Dimension imSize = null;//реальный размер изображения
     private BufferedImage img;
     BufferedImage scaledImage;
     private boolean isFullScreen = false;
+
+    private boolean reDraw = false;
 
     public Panel() {
         super();
@@ -36,8 +39,14 @@ public class Panel extends JPanel implements Observer {
         if (repaintEvent.image != null) {
             this.img = repaintEvent.image;
             imSize = new Dimension(img.getWidth(), img.getHeight());
+            if(previousImgSize == null || (previousImgSize.width !=  imSize.width
+                    && previousImgSize.height !=  imSize.height)) {
+                panelSize = new Dimension(imSize);
+                previousImgSize = new Dimension(imSize);
+            }
 
-            panelSize = new Dimension(imSize);
+            //требуется перерисовка
+            reDraw = true;
 
             setPreferredSize(panelSize);
         }
@@ -142,13 +151,15 @@ public class Panel extends JPanel implements Observer {
             if (panelSize.width == imSize.width && panelSize.height == imSize.height) {
                 g.drawImage(img, 0, 0, this);
             } else {
-                if (panelSize.width == previousPanelSize.width ||
-                        panelSize.height == previousPanelSize.height) {
+                //прийдётся ли перерисовывать картинку или можно оставить прошлый вариант
+                if (!reDraw && (panelSize.width == previousPanelSize.width ||
+                        panelSize.height == previousPanelSize.height)) {
                     g.drawImage(scaledImage, 0, 0, this);
                 } else {
-                    //применение инерполяции в случае измененя размера
+                    //применение инерполяции в случае измененя размера панели или reDraw
                     drawInterpolatedImage(g);
                     previousPanelSize = new Dimension(panelSize);
+                    reDraw = false;
                 }
             }
         }

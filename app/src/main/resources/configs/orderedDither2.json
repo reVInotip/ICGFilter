@@ -2,19 +2,19 @@
 	"filterPath": "org.example.model.filters.filters.OrderedDither2",
 	"dialogWindowExist": true,
 	"filterParams": [{
-			"name": "red quantization number",
+			"name": "red level",
 			"type": "int",
 			"max": 128,
 			"min": 2
 		},
 		{
-			"name": "green quantization number",
+			"name": "green level",
 			"type": "int",
 			"max": 128,
 			"min": 2
 		},
 		{
-			"name": "blue quantization number",
+			"name": "blue level",
 			"type": "int",
 			"max": 128,
 			"min": 2
