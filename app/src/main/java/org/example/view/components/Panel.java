@@ -6,6 +6,7 @@ import org.example.event.observers.Observer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class Panel extends JPanel implements Observer {
@@ -14,8 +15,10 @@ public class Panel extends JPanel implements Observer {
     private Dimension previousImgSize;// для того чтобы при обновлении картинки тогоже размера ничего не съезжало
     private Dimension imSize = null;//реальный размер изображения
     private BufferedImage img;
-    BufferedImage scaledImage;
+    private BufferedImage scaledImage;
     private boolean isFullScreen = false;
+
+    public Object interpolationType = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
 
     private boolean reDraw = false;
 
@@ -157,7 +160,7 @@ public class Panel extends JPanel implements Observer {
                     g.drawImage(scaledImage, 0, 0, this);
                 } else {
                     //применение инерполяции в случае измененя размера панели или reDraw
-                    drawInterpolatedImage(g);
+                    drawInterpolatedImage((Graphics2D) g);
                     previousPanelSize = new Dimension(panelSize);
                     reDraw = false;
                 }
@@ -165,7 +168,7 @@ public class Panel extends JPanel implements Observer {
         }
         else {
             //применение инерполяции в случае измененя размера окна в fullScreen
-            drawInterpolatedImage(g);
+            drawInterpolatedImage((Graphics2D) g);
             previousPanelSize = new Dimension(panelSize);
             //можно использовать другую интерполяцию для fullScreen
         }
@@ -177,6 +180,31 @@ public class Panel extends JPanel implements Observer {
         g2d.setColor(Color.RED);
         g2d.drawRect(1, 1, panelSize.width - 1, panelSize.height - 1);
         g2d.dispose();
+    }
+
+    private void drawInterpolatedImage(Graphics2D g2d) {
+        scaledImage = new BufferedImage(panelSize.width, panelSize.height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = scaledImage.createGraphics();
+
+        g.setRenderingHint(
+                RenderingHints.KEY_INTERPOLATION,
+                interpolationType
+        );
+
+        // Масштабирование
+        g.drawImage(
+                img,
+                AffineTransform.getScaleInstance(
+                        (double) panelSize.width / img.getWidth(),
+                        (double) panelSize.height / img.getHeight()
+                ),
+                null
+        );
+        g.dispose();
+
+        g2d.drawImage(scaledImage, 0, 0, this);
+
+        //g2d.dispose();
     }
 
     private void drawInterpolatedImage(Graphics g) {

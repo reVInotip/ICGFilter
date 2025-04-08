@@ -14,15 +14,12 @@ import org.example.view.components.Frame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.awt.event.ActionListener;
 import java.util.Map;
 
 public class MainFrame extends Frame implements Observer {
@@ -142,11 +139,22 @@ public class MainFrame extends Frame implements Observer {
             ModelTasksManager.addTask(new FullScreenTask());
         };
 
+        ActionListener setBilinearInterpolation = actionEvent -> panel.interpolationType = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+
+        ActionListener setBicubicInterpolation = actionEvent -> panel.interpolationType = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+
+        ActionListener setNearestNeighbourInterpolation = actionEvent -> panel.interpolationType = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+
         createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener, returnToOriginalListener);
 
         addMenuItem("File", "Save", saveListener);
         addMenuItem("File", "Open", loadListener);
         addMenuItem("Modify", "Apply selected filter", applyListener);
+
+        addMenuItem("Rendering", "Use bilinear interpolation", setBilinearInterpolation);
+        addMenuItem("Rendering", "Use bicubic interpolation", setBicubicInterpolation);
+        addMenuItem("Rendering", "Use nearest neighbour interpolation", setNearestNeighbourInterpolation);
+
         addAboutSubmenu();
     }
 
