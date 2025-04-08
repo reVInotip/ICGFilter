@@ -7,7 +7,7 @@ import org.example.model.filters.filterModels.ModelPrototype;
 
 import java.awt.image.BufferedImage;
 
-@Filter(descr = "Упорядоченный дизеринг (матрица Байера 8x8)", icon = "/utils/ordered_dithering.png")
+@Filter(descr = "Упорядоченный дизеринг 2", icon = "/utils/ordered_dithering.png")
 public class OrderedDither2 extends FilterPrototype {
     // Оптимизированная матрица Байера 8x8 (значения 0-63)
     private static final int[][] BAYER_MATRIX_8x8 = {
