@@ -14,15 +14,12 @@ import org.example.view.components.Frame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.awt.event.ActionListener;
 import java.util.Map;
 
 public class MainFrame extends Frame implements Observer {
@@ -83,18 +80,24 @@ public class MainFrame extends Frame implements Observer {
     }
 
     private void returnToOriginalButton(ActionListener loadListener) {
-        addToolbarButton("returnToOriginal", "возвращает изображение в огригинальный вид", "/utils/return.png", loadListener);
+        addToolbarButton("returnToOriginal", "возвращает изображение в оригинальный вид", "/utils/return_original.png", loadListener);
+        addToolbarSeparator();
+    }
+
+    private void returnToFilteredButton(ActionListener loadListener) {
+        addToolbarButton("returnToFiltered", "возвращает изображение, к которому применён фильтр", "/utils/return_filtered.png", loadListener);
         addToolbarSeparator();
     }
 
     private void createToolbarButtons(ActionListener saveListener, ActionListener loadListener
-            , ActionListener applyListener, ActionListener fullScreenListener, ActionListener returnToOriginalListener) {
-        returnToOriginalButton(returnToOriginalListener);
+            , ActionListener applyListener, ActionListener fullScreenListener, ActionListener returnToOriginalListener,
+                                      ActionListener returnToFilteredListener) {
         createSaveButton(saveListener);
         createLoadButton(loadListener);
         createApplyButton(applyListener);
         fullScreenButton(fullScreenListener);
-
+        returnToOriginalButton(returnToOriginalListener);
+        returnToFilteredButton(returnToFilteredListener);
     }
 
     private MainFrame(HashMap<String, FilterDto> filterDtos, HashMap<String, ModelPrototype> filterModels) {
@@ -138,15 +141,31 @@ public class MainFrame extends Frame implements Observer {
             ModelTasksManager.addTask(new ReturnToOriginalImgTask());
         };
 
+        ActionListener returnToFilteredListener = action -> {
+            CursorManager.showWaitCursor();
+            ModelTasksManager.addTask(new ReturnToFilteredImgTask());
+        };
+
         ActionListener fullScreenListener = action -> {
             ModelTasksManager.addTask(new FullScreenTask());
         };
 
-        createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener, returnToOriginalListener);
+        ActionListener setBilinearInterpolation = actionEvent -> panel.interpolationType = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+
+        ActionListener setBicubicInterpolation = actionEvent -> panel.interpolationType = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+
+        ActionListener setNearestNeighbourInterpolation = actionEvent -> panel.interpolationType = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+
+        createToolbarButtons(saveListener, loadListener, applyListener, fullScreenListener, returnToOriginalListener, returnToFilteredListener);
 
         addMenuItem("File", "Save", saveListener);
         addMenuItem("File", "Open", loadListener);
         addMenuItem("Modify", "Apply selected filter", applyListener);
+
+        addMenuItem("Rendering", "Use bilinear interpolation", setBilinearInterpolation);
+        addMenuItem("Rendering", "Use bicubic interpolation", setBicubicInterpolation);
+        addMenuItem("Rendering", "Use nearest neighbour interpolation", setNearestNeighbourInterpolation);
+
         addAboutSubmenu();
     }
 

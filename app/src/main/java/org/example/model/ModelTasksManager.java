@@ -70,6 +70,9 @@ public class ModelTasksManager {
             case ReturnToOriginalImgTask returnToOriginalImgTask ->
                     model.update(new RepaintEvent(imageWorker.getLoadedImage()));
 
+            case ReturnToFilteredImgTask returnToFilteredImgTask ->
+                    model.update(new RepaintEvent(imageWorker.getFilteredImage()));
+
             default ->
                     throw new IllegalArgumentException("Unknown task type: " + currTask.getClass());
         }
