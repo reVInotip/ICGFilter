@@ -59,8 +59,8 @@ public class Frame extends JFrame {
         JScrollPane scrollPaneToToolBar = new JScrollPane(toolBar);
         scrollPaneToToolBar.setPreferredSize(
                 new Dimension(
-                        100, //не очень важно т.к. она изменяется атоматически
-                        50
+                        110, //не очень важно т.к. она изменяется атоматически
+                        53
                 )
         );
         add(scrollPaneToToolBar, BorderLayout.NORTH);
