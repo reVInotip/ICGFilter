@@ -87,6 +87,21 @@ public class Frame extends JFrame {
         item.addActionListener(listener);
     }
 
+    protected void addMenuButtonGroup(String title, HashMap<String, ActionListener> items, String mainItem) {
+        ButtonGroup menuButtonGroup = new ButtonGroup();
+        for (Map.Entry<String, ActionListener> entry: items.entrySet()) {
+            String name = entry.getKey();
+            ActionListener listener = entry.getValue();
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
+            item.addActionListener(listener);
+
+            item.setSelected(name.equals(mainItem));
+
+            menuButtonGroup.add(item);
+            menuBar.getMenu(menuHashMap.get(title)).add(item);
+        }
+    }
+
     protected void addMenu(String title) {
         JMenu menu = new JMenu(title);
         menuHashMap.put(title, menuIndex);
