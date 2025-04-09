@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-@Filter(descr = "Гауссово размытие", icon = "/utils/gaussian.png")
+@Filter(descr = "Гауссово размытие", icon = "/utils/GaussianBlur.png")
 public class GaussianBlur extends FilterPrototype {
     private Map<Integer, double[]> kernelCache = null;
     private ExecutorService executor = null;

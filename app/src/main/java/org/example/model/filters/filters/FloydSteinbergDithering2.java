@@ -8,7 +8,7 @@ import org.example.model.filters.filterModels.ModelPrototype;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-@Filter(descr = "Дизеринг Флойда-Стейнберга 2", icon = "/utils/dithering.png")
+@Filter(descr = "Дизеринг Флойда-Стейнберга 2", icon = "/utils/floydSteinbergDithering.png")
 public class FloydSteinbergDithering2 extends FilterPrototype {
     public FloydSteinbergDithering2(ModelPrototype filterModel) {
         super(filterModel);
