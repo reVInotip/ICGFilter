@@ -162,9 +162,14 @@ public class MainFrame extends Frame implements Observer {
         addMenuItem("File", "Open", loadListener);
         addMenuItem("Modify", "Apply selected filter", applyListener);
 
-        addMenuItem("Rendering", "Use bilinear interpolation", setBilinearInterpolation);
-        addMenuItem("Rendering", "Use bicubic interpolation", setBicubicInterpolation);
-        addMenuItem("Rendering", "Use nearest neighbour interpolation", setNearestNeighbourInterpolation);
+        addMenuButtonGroup(
+                "Rendering",
+                new HashMap<String, ActionListener>() {{
+                    put("bilinear interpolation", setBilinearInterpolation);
+                    put("bicubic interpolation", setBicubicInterpolation);
+                    put("nearest neighbour interpolation", setNearestNeighbourInterpolation);
+                }},
+                "bilinear interpolation");
 
         addAboutSubmenu();
     }
