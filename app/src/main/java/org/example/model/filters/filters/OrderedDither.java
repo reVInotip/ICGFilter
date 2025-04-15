@@ -54,9 +54,11 @@ public class OrderedDither extends FilterPrototype {
         }
     }
 
-    private int transform(int intensity, int x, int y, ArrayList<Integer> palette, Integer[] matrix, int matrixSize) {
-        double matrixValue = ((double) matrix[y * matrixSize + x]) / (matrixSize * matrixSize);
-        double updatedIntensity = intensity + matrixValue * 256 - 128;
+    private int transform(int intensity, int x, int y, ArrayList<Integer> palette, Integer[] matrix, int matrixSize, int level) {
+        int k = matrixSize * matrixSize;
+        double matrixValue = ((double) matrix[y * matrixSize + x]) / k;
+        double updatedIntensity = intensity / 255.0 + matrixValue - 0.5 * (k - 1) / k;
+        updatedIntensity *= 255.0;
 
         int color = 0;
         int distance = Integer.MAX_VALUE;
@@ -72,11 +74,11 @@ public class OrderedDither extends FilterPrototype {
     }
 
     private int findSuitableMatrix(int quantizationNumber) {
-        if (quantizationNumber >= 2 && quantizationNumber < 30) {
+        if (256.0 / quantizationNumber >= 16 * 16) {
             return 4;
-        } else if (quantizationNumber >= 30 && quantizationNumber < 60) {
+        } else if (256.0 / quantizationNumber >= 8 * 8) {
             return 3;
-        } else if (quantizationNumber >= 60 && quantizationNumber < 90) {
+        } else if (256.0 / quantizationNumber >= 4 * 4) {
             return 2;
         } else {
             return 1;
@@ -128,15 +130,15 @@ public class OrderedDither extends FilterPrototype {
 
                 x = j % redMatrixSize;
                 y = i % redMatrixSize;
-                red = transform((color & 0xff0000) >> 16, x, y, paletteForRed, redMatrix, redMatrixSize);
+                red = transform((color & 0xff0000) >> 16, x, y, paletteForRed, redMatrix, redMatrixSize, redQuantizationNumber);
 
                 x = j % greenMatrixSize;
                 y = i % greenMatrixSize;
-                green = transform((color & 0xff00) >> 8, x, y, paletteForGreen, greenMatrix, greenMatrixSize);
+                green = transform((color & 0xff00) >> 8, x, y, paletteForGreen, greenMatrix, greenMatrixSize, greenQuantizationNumber);
 
                 x = j % blueMatrixSize;
                 y = i % blueMatrixSize;
-                blue = transform(color & 0xff, x, y, paletteForBlue, blueMatrix, blueMatrixSize);
+                blue = transform(color & 0xff, x, y, paletteForBlue, blueMatrix, blueMatrixSize, blueQuantizationNumber);
 
                 alpha = (color & 0xff000000) >> 24;
 
