@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-@Filter(descr = "Адаптивный упорядоченный дизеринг с гамма-коррекцией", icon = "/utils/ordered_dithering.png")
+@Filter(descr = "Адаптивный упорядоченный дизеринг 2", icon = "/utils/ordered_dithering.png")
 public class OrderedDither2 extends FilterPrototype {
     // Предопределенные матрицы Байера разных размеров
     private static final int[][] BAYER_MATRIX_2x2 = {
@@ -57,9 +57,18 @@ public class OrderedDither2 extends FilterPrototype {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        int matrixSize = determineOptimalMatrixSize(width, height);
-        int[][] bayerMatrix = BAYER_MATRICES.get(matrixSize);
-        double matrixNormalizer = 1.0 / (matrixSize * matrixSize);
+        int redMatrixSize = determineOptimalMatrixSize(filterModel.getInteger("red level"));
+        int greenMatrixSize = determineOptimalMatrixSize(filterModel.getInteger("red level"));
+        int blueMatrixSize = determineOptimalMatrixSize(filterModel.getInteger("red level"));
+
+        int[][] bayerRedMatrix = BAYER_MATRICES.get(redMatrixSize);
+        int[][] bayerGreenMatrix = BAYER_MATRICES.get(greenMatrixSize);
+        int[][] bayerBlueMatrix = BAYER_MATRICES.get(blueMatrixSize);
+
+        double matrixRedNormalizer = 1.0 / (redMatrixSize * redMatrixSize);
+        double matrixBlueNormalizer = 1.0 / (blueMatrixSize * blueMatrixSize);
+        double matrixGreenNormalizer = 1.0 / (greenMatrixSize * greenMatrixSize);
+
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -76,9 +85,9 @@ public class OrderedDither2 extends FilterPrototype {
                 int green = (argb >> 8) & 255;
                 int blue = argb & 255;
 
-                int newRed = applyDithering(red, x, y, "red level", bayerMatrix, matrixSize, matrixNormalizer);
-                int newGreen = applyDithering(green, x, y, "green level", bayerMatrix, matrixSize, matrixNormalizer);
-                int newBlue = applyDithering(blue, x, y, "blue level", bayerMatrix, matrixSize, matrixNormalizer);
+                int newRed = applyDithering(red, x, y, "red level", bayerRedMatrix, redMatrixSize, matrixRedNormalizer);
+                int newGreen = applyDithering(green, x, y, "green level", bayerGreenMatrix, greenMatrixSize, matrixBlueNormalizer);
+                int newBlue = applyDithering(blue, x, y, "blue level", bayerBlueMatrix, blueMatrixSize, matrixGreenNormalizer);
 
                 int newARGB = (alpha << 24) | (newRed << 16) | (newGreen << 8) | newBlue;
                 outputImage.setRGB(x, y, newARGB);
@@ -88,11 +97,14 @@ public class OrderedDither2 extends FilterPrototype {
         update(new FiltrationCompletedEvent(outputImage));
     }
 
-    private int determineOptimalMatrixSize(int width, int height) {
-        int maxDimension = Math.max(width, height);
-        if (maxDimension <= 256) return 2;
-        if (maxDimension <= 1024) return 4;
-        return 8;
+    private int determineOptimalMatrixSize(int level) {
+        if (256.0 / level >= 8 * 8) {
+            return 8;
+        } else if (256.0 / level >= 4 * 4) {
+            return 4;
+        } else {
+            return 2;
+        }
     }
 
     private int applyDithering(int oldColor, int x, int y, String levelKey,
@@ -100,26 +112,19 @@ public class OrderedDither2 extends FilterPrototype {
         int levels = filterModel.getInteger(levelKey) + 1;
         if (levels <= 1) return oldColor;
 
-        double linearColor = srgbToLinear(oldColor / 255.0);
+        double linearColor =  oldColor / 255.0;
         int threshold = bayerMatrix[y % matrixSize][x % matrixSize];
         double ditherThreshold = threshold * matrixNormalizer;
 
-        int quantized = (int)(linearColor * (levels - 1) + ditherThreshold);
+        int quantized = (int)(linearColor * (levels - 1) + (ditherThreshold - 0.05));
         quantized = Math.min(quantized, levels - 1);
 
-        double srgb = linearToSrgb(quantized / (double)(levels - 1));
+        double srgb = quantized / (double)(levels - 1);
         return clamp((int)(srgb * 255), 0, 255);
     }
 
-    private double srgbToLinear(double srgb) {
-        return srgb <= 0.04045 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
-    }
-
-    private double linearToSrgb(double linear) {
-        return linear <= 0.0031308 ? 12.92 * linear : 1.055 * Math.pow(linear, 1/2.4) - 0.055;
-    }
 
     private int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value + 10));
+        return Math.max(min, Math.min(max, value));
     }
 }
