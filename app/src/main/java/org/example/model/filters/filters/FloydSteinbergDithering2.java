@@ -68,9 +68,13 @@ public class FloydSteinbergDithering2 extends FilterPrototype {
             palette.add(i);
         }
 
-        palette.add(255);
+        palette.add(253);
 
         return palette;
+    }
+
+    private int clamp(int value) {
+        return Math.max(0, Math.min(253, value));
     }
 
     private int getNearestIntensity(int intensity, ArrayList<Integer> palette) {
@@ -93,9 +97,9 @@ public class FloydSteinbergDithering2 extends FilterPrototype {
             throw new IllegalArgumentException("invalid image");
         }
 
-        int redQuantizationNumber = filterModel.getInteger("red quantization number");
-        int greenQuantizationNumber = filterModel.getInteger("green quantization number");
-        int blueQuantizationNumber = filterModel.getInteger("blue quantization number");
+        int redQuantizationNumber = filterModel.getInteger("red quantization number") + 1;
+        int greenQuantizationNumber = filterModel.getInteger("green quantization number") + 1;
+        int blueQuantizationNumber = filterModel.getInteger("blue quantization number") + 1;
 
         ArrayList<Integer> paletteForRed = createPalette(redQuantizationNumber);
         ArrayList<Integer> paletteForGreen = createPalette(greenQuantizationNumber);
